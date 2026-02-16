@@ -499,7 +499,6 @@ class KafkaConnectionTest extends TestCase
     {
         $reflection = new ReflectionClass($connection);
         $property = $reflection->getProperty('producer');
-        $property->setAccessible(true);
         $property->setValue($connection, $producer);
     }
 
@@ -507,7 +506,6 @@ class KafkaConnectionTest extends TestCase
     {
         $reflection = new ReflectionClass($connection);
         $property = $reflection->getProperty('consumer');
-        $property->setAccessible(true);
         $property->setValue($connection, $consumer);
     }
 }

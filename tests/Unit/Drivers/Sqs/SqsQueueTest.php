@@ -51,7 +51,6 @@ class SqsQueueTest extends TestCase
         // Use reflection to inject the mocked client
         $reflection = new ReflectionClass($this->connection);
         $property = $reflection->getProperty('client');
-        $property->setAccessible(true);
         $property->setValue($this->connection, $this->client);
 
         $this->queue = new SqsQueue($this->connection, 'default');
@@ -910,7 +909,6 @@ class SqsQueueTest extends TestCase
     {
         $reflection = new ReflectionClass($this->queue);
         $method = $reflection->getMethod('getQueue');
-        $method->setAccessible(true);
 
         $this->assertSame('default', $method->invoke($this->queue, null));
     }
@@ -919,7 +917,6 @@ class SqsQueueTest extends TestCase
     {
         $reflection = new ReflectionClass($this->queue);
         $method = $reflection->getMethod('getQueue');
-        $method->setAccessible(true);
 
         $this->assertSame('custom', $method->invoke($this->queue, 'custom'));
     }
@@ -1034,7 +1031,6 @@ class SqsQueueTest extends TestCase
 
         $reflection = new ReflectionClass($connection);
         $property = $reflection->getProperty('client');
-        $property->setAccessible(true);
         $property->setValue($connection, $this->client);
 
         return $connection;
@@ -1059,7 +1055,6 @@ class SqsQueueTest extends TestCase
 
         $reflection = new ReflectionClass($connection);
         $property = $reflection->getProperty('client');
-        $property->setAccessible(true);
         $property->setValue($connection, $this->client);
 
         return $connection;

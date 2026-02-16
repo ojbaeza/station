@@ -50,7 +50,6 @@ class SqsJobTest extends TestCase
         // Inject the mocked client
         $reflection = new ReflectionClass($connection);
         $property = $reflection->getProperty('client');
-        $property->setAccessible(true);
         $property->setValue($connection, $this->client);
 
         $this->queue = new SqsQueue($connection, 'default', $config);
@@ -329,7 +328,6 @@ class SqsJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -346,7 +344,6 @@ class SqsJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -363,7 +360,6 @@ class SqsJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -380,7 +376,6 @@ class SqsJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -401,7 +396,6 @@ class SqsJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('preparePayloadForRelease');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job);
         $decoded = json_decode($result, true);
@@ -418,7 +412,6 @@ class SqsJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('preparePayloadForRelease');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job);
         $decoded = json_decode($result, true);

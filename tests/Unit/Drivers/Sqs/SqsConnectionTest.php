@@ -202,7 +202,6 @@ class SqsConnectionTest extends TestCase
         // Inject mocked client
         $reflection = new ReflectionClass($connection);
         $property = $reflection->getProperty('client');
-        $property->setAccessible(true);
         $property->setValue($connection, $client);
 
         $this->assertTrue($connection->isConnected());
@@ -221,7 +220,6 @@ class SqsConnectionTest extends TestCase
         // Inject mocked client
         $reflection = new ReflectionClass($connection);
         $property = $reflection->getProperty('client');
-        $property->setAccessible(true);
         $property->setValue($connection, $client);
 
         $this->assertFalse($connection->isConnected());
@@ -261,14 +259,12 @@ class SqsConnectionTest extends TestCase
         // Inject a mock client
         $reflection = new ReflectionClass($connection);
         $clientProperty = $reflection->getProperty('client');
-        $clientProperty->setAccessible(true);
         $clientProperty->setValue($connection, Mockery::mock(SqsClient::class));
 
         $connection->disconnect();
 
         // Verify queue URLs were cleared via reflection
         $queueUrlsProperty = $reflection->getProperty('queueUrls');
-        $queueUrlsProperty->setAccessible(true);
         $this->assertEmpty($queueUrlsProperty->getValue($connection));
     }
 

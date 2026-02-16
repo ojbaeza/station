@@ -64,11 +64,11 @@ class KafkaQueueTest extends TestCase
         $reflection = new ReflectionClass($this->connection);
 
         $producerProperty = $reflection->getProperty('producer');
-        $producerProperty->setAccessible(true);
+
         $producerProperty->setValue($this->connection, $this->producer);
 
         $consumerProperty = $reflection->getProperty('consumer');
-        $consumerProperty->setAccessible(true);
+
         $consumerProperty->setValue($this->connection, $this->consumer);
 
         $this->queue = new KafkaQueue($this->connection, 'default');
@@ -83,11 +83,11 @@ class KafkaQueueTest extends TestCase
             $reflection = new ReflectionClass($this->connection);
 
             $producerProperty = $reflection->getProperty('producer');
-            $producerProperty->setAccessible(true);
+
             $producerProperty->setValue($this->connection, null);
 
             $consumerProperty = $reflection->getProperty('consumer');
-            $consumerProperty->setAccessible(true);
+
             $consumerProperty->setValue($this->connection, null);
         }
 
@@ -591,7 +591,7 @@ class KafkaQueueTest extends TestCase
         // Inject mocked consumer
         $reflection = new ReflectionClass($connection);
         $consumerProperty = $reflection->getProperty('consumer');
-        $consumerProperty->setAccessible(true);
+
         $consumerProperty->setValue($connection, $this->consumer);
 
         $queue = new KafkaQueue($connection, 'default');
@@ -623,7 +623,7 @@ class KafkaQueueTest extends TestCase
         // Inject mocked consumer
         $reflection = new ReflectionClass($connection);
         $consumerProperty = $reflection->getProperty('consumer');
-        $consumerProperty->setAccessible(true);
+
         $consumerProperty->setValue($connection, $this->consumer);
 
         $queue = new KafkaQueue($connection, 'default');
@@ -849,7 +849,6 @@ class KafkaQueueTest extends TestCase
     {
         $reflection = new ReflectionClass($this->queue);
         $method = $reflection->getMethod('getQueue');
-        $method->setAccessible(true);
 
         $this->assertSame('default', $method->invoke($this->queue, null));
         $this->assertSame('custom', $method->invoke($this->queue, 'custom'));
@@ -1144,7 +1143,7 @@ class KafkaQueueTest extends TestCase
         $conn = new KafkaConnection($config);
         $reflection = new ReflectionClass($conn);
         $consumerProperty = $reflection->getProperty('consumer');
-        $consumerProperty->setAccessible(true);
+
         $consumerProperty->setValue($conn, $this->consumer);
 
         $freshQueue = new KafkaQueue($conn, 'default');

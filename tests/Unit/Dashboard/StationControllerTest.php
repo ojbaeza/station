@@ -923,7 +923,6 @@ class StationControllerTest extends TestCase
     private function invokePrivateMethod(string $method, array $args = []): mixed
     {
         $reflection = new ReflectionMethod($this->controller, $method);
-        $reflection->setAccessible(true);
 
         return $reflection->invoke($this->controller, ...$args);
     }

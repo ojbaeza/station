@@ -114,7 +114,6 @@ class BeanstalkdConnectionTest extends TestCase
         // Verify disconnect sets client to null via reflection
         $reflection = new ReflectionClass($connection);
         $property = $reflection->getProperty('client');
-        $property->setAccessible(true);
 
         // Initially null
         $this->assertNull($property->getValue($connection));

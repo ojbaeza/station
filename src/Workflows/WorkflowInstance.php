@@ -71,7 +71,6 @@ final class WorkflowInstance
         $reflection = new ReflectionClass($instance);
 
         $idProperty = $reflection->getProperty('id');
-        $idProperty->setAccessible(true);
         $idProperty->setValue($instance, $data['id']);
 
         $instance->status = $data['status'];
@@ -85,7 +84,6 @@ final class WorkflowInstance
 
         if (isset($data['created_at'])) {
             $createdAtProperty = $reflection->getProperty('createdAt');
-            $createdAtProperty->setAccessible(true);
             $createdAtProperty->setValue($instance, new DateTimeImmutable($data['created_at']));
         }
 

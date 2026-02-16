@@ -416,7 +416,6 @@ class RabbitMQJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('preparePayloadForRelease');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job);
         $decoded = json_decode($result, true);
@@ -432,7 +431,6 @@ class RabbitMQJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('preparePayloadForRelease');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job);
         $decoded = json_decode($result, true);
@@ -448,7 +446,6 @@ class RabbitMQJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -464,7 +461,6 @@ class RabbitMQJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -480,7 +476,6 @@ class RabbitMQJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -496,7 +491,6 @@ class RabbitMQJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 

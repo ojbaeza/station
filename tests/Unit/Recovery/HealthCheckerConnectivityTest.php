@@ -63,7 +63,6 @@ class HealthCheckerConnectivityTest extends TestCase
 
         // Verify our test double works correctly
         $method = new ReflectionMethod($checker, 'probeConnection');
-        $method->setAccessible(true);
 
         $this->assertTrue($method->invoke($checker, '127.0.0.1', 5672, 'rabbitmq'));
         $this->assertFalse($method->invoke($checker, '127.0.0.1', 6379, 'redis'));
@@ -74,7 +73,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         $config = [
             'hosts' => [
@@ -95,7 +93,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         $config = [
             'host' => 'custom.host',
@@ -112,7 +109,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         $config = [
             'host' => 'beanstalkd.local',
@@ -129,7 +125,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractKafkaHostPort');
-        $method->setAccessible(true);
 
         [$host, $port] = $method->invoke($checker, ['brokers' => 'kafka1:9092,kafka2:9093']);
 
@@ -141,7 +136,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractKafkaHostPort');
-        $method->setAccessible(true);
 
         [$host, $port] = $method->invoke($checker, []);
 
@@ -153,7 +147,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         [$host, $port] = $method->invoke($checker, [], 'unknown_driver');
 
@@ -178,7 +171,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         // Hosts array with entry missing host/port keys - should use defaults
         $config = [
@@ -197,7 +189,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         // hosts key is not an array - should fall back to host/port config
         $config = [
@@ -216,7 +207,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         $config = [
             'host' => '10.0.0.5',
@@ -233,7 +223,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         // No host/port in config - should use defaults
         $config = [];
@@ -248,7 +237,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractKafkaHostPort');
-        $method->setAccessible(true);
 
         // Single broker host without port
         [$host, $port] = $method->invoke($checker, ['brokers' => 'kafka-host']);
@@ -261,7 +249,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'extractKafkaHostPort');
-        $method->setAccessible(true);
 
         [$host, $port] = $method->invoke($checker, ['brokers' => '  broker1:9092 , broker2:9093 ']);
 
@@ -277,7 +264,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeRedis');
-        $method->setAccessible(true);
 
         // Create a pair of connected sockets for testing
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
@@ -299,7 +285,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeRedis');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -319,7 +304,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeRedis');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -340,7 +324,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeRabbitMQ');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -361,7 +344,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeRabbitMQ');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -380,7 +362,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeBeanstalkd');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -400,7 +381,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeBeanstalkd');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -421,7 +401,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeBeanstalkd');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -440,7 +419,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeKafka');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -461,7 +439,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeKafka');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -482,7 +459,6 @@ class HealthCheckerConnectivityTest extends TestCase
     {
         $checker = $this->createChecker([]);
         $method = new ReflectionMethod($checker, 'probeKafka');
-        $method->setAccessible(true);
 
         $pair = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if ($pair === false) {
@@ -507,7 +483,6 @@ class HealthCheckerConnectivityTest extends TestCase
         $checker->probeResults = ['redis-host:6379' => true];
 
         $method = new ReflectionMethod($checker, 'probeConnection');
-        $method->setAccessible(true);
 
         $this->assertTrue($method->invoke($checker, 'redis-host', 6379, 'redis'));
     }
@@ -518,7 +493,6 @@ class HealthCheckerConnectivityTest extends TestCase
         $checker->probeResults = ['rabbit-host:5672' => true];
 
         $method = new ReflectionMethod($checker, 'probeConnection');
-        $method->setAccessible(true);
 
         $this->assertTrue($method->invoke($checker, 'rabbit-host', 5672, 'rabbitmq'));
     }
@@ -529,7 +503,6 @@ class HealthCheckerConnectivityTest extends TestCase
         $checker->probeResults = ['bean-host:11300' => false];
 
         $method = new ReflectionMethod($checker, 'probeConnection');
-        $method->setAccessible(true);
 
         $this->assertFalse($method->invoke($checker, 'bean-host', 11300, 'beanstalkd'));
     }
@@ -540,7 +513,6 @@ class HealthCheckerConnectivityTest extends TestCase
         $checker->probeResults = ['kafka-host:9092' => true];
 
         $method = new ReflectionMethod($checker, 'probeConnection');
-        $method->setAccessible(true);
 
         $this->assertTrue($method->invoke($checker, 'kafka-host', 9092, 'kafka'));
     }
@@ -553,7 +525,6 @@ class HealthCheckerConnectivityTest extends TestCase
         $checker->probeResults = ['some-host:1234' => false];
 
         $method = new ReflectionMethod($checker, 'probeConnection');
-        $method->setAccessible(true);
 
         $this->assertFalse($method->invoke($checker, 'some-host', 1234, 'unknown'));
     }

@@ -58,11 +58,11 @@ class KafkaJobTest extends TestCase
         $reflection = new ReflectionClass($connection);
 
         $producerProperty = $reflection->getProperty('producer');
-        $producerProperty->setAccessible(true);
+
         $producerProperty->setValue($connection, $this->producer);
 
         $consumerProperty = $reflection->getProperty('consumer');
-        $consumerProperty->setAccessible(true);
+
         $consumerProperty->setValue($connection, $this->consumer);
 
         $this->queue = new KafkaQueue($connection, 'default', $config);
@@ -406,7 +406,6 @@ class KafkaJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -423,7 +422,6 @@ class KafkaJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -440,7 +438,6 @@ class KafkaJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -457,7 +454,6 @@ class KafkaJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 

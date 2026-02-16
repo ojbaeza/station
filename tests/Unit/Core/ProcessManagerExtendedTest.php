@@ -332,7 +332,6 @@ class ProcessManagerExtendedTest extends TestCase
         $manager = new ProcessManager(['enabled' => true]);
 
         $method = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $method->setAccessible(true);
 
         $pidDir = storage_path('station/pids');
         $pidFile = $pidDir . '/worker-test_conn.pid';
@@ -360,7 +359,6 @@ class ProcessManagerExtendedTest extends TestCase
         $manager = new ProcessManager(['enabled' => true]);
 
         $method = new ReflectionMethod(ProcessManager::class, 'getPidFilePath');
-        $method->setAccessible(true);
 
         $path = $method->invoke($manager, 'worker', 'rabbitmq');
 
@@ -372,7 +370,6 @@ class ProcessManagerExtendedTest extends TestCase
         $manager = new ProcessManager(['enabled' => true]);
 
         $method = new ReflectionMethod(ProcessManager::class, 'getPidDirectory');
-        $method->setAccessible(true);
 
         $dir = $method->invoke($manager);
 
@@ -384,7 +381,6 @@ class ProcessManagerExtendedTest extends TestCase
         $manager = new ProcessManager(['enabled' => true]);
 
         $method = new ReflectionMethod(ProcessManager::class, 'findPidFiles');
-        $method->setAccessible(true);
 
         // Temporarily point to non-existent directory
         // findPidFiles checks is_dir internally
@@ -400,11 +396,10 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create a test PID file
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke($manager, 'worker', 'test_find', 88888, 'test cmd');
 
         $findMethod = new ReflectionMethod(ProcessManager::class, 'findPidFiles');
-        $findMethod->setAccessible(true);
 
         $files = $findMethod->invoke($manager, 'worker');
 
@@ -428,7 +423,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create test PID files
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke($manager, 'worker', 'cleanup_test', 77777, 'test cmd');
 
         // Verify file exists
@@ -437,7 +432,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Now clean up by PID
         $cleanupMethod = new ReflectionMethod(ProcessManager::class, 'cleanupPidFilesForPid');
-        $cleanupMethod->setAccessible(true);
+
         $cleanupMethod->invoke($manager, 77777);
 
         // File should be deleted
@@ -450,7 +445,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create test PID file with different PID
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke($manager, 'worker', 'cleanup_nomatch', 66666, 'test cmd');
 
         $pidFile = storage_path('station/pids/worker-cleanup_nomatch.pid');
@@ -458,7 +453,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Clean up a different PID
         $cleanupMethod = new ReflectionMethod(ProcessManager::class, 'cleanupPidFilesForPid');
-        $cleanupMethod->setAccessible(true);
+
         $cleanupMethod->invoke($manager, 55555); // Different PID
 
         // File should still exist
@@ -480,7 +475,6 @@ class ProcessManagerExtendedTest extends TestCase
 
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'isProcessRunning');
-        $method->setAccessible(true);
 
         // PID 999999 almost certainly doesn't exist
         $this->assertFalse($method->invoke($manager, 999999));
@@ -494,7 +488,6 @@ class ProcessManagerExtendedTest extends TestCase
 
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'isProcessRunning');
-        $method->setAccessible(true);
 
         // Current process PID is definitely running
         $this->assertTrue($method->invoke($manager, getmypid()));
@@ -512,7 +505,6 @@ class ProcessManagerExtendedTest extends TestCase
 
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'getProcessCommand');
-        $method->setAccessible(true);
 
         $result = $method->invoke($manager, 999999);
         $this->assertNull($result);
@@ -526,7 +518,6 @@ class ProcessManagerExtendedTest extends TestCase
 
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'getProcessCommand');
-        $method->setAccessible(true);
 
         $result = $method->invoke($manager, getmypid());
         // Current process should return a non-null command
@@ -551,7 +542,6 @@ class ProcessManagerExtendedTest extends TestCase
 
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'isOwnedByCurrentUser');
-        $method->setAccessible(true);
 
         // Current process is owned by current user
         $this->assertTrue($method->invoke($manager, getmypid()));
@@ -565,7 +555,6 @@ class ProcessManagerExtendedTest extends TestCase
 
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'isOwnedByCurrentUser');
-        $method->setAccessible(true);
 
         // PID 999999 doesn't exist, posix_kill(999999, 0) returns false
         $this->assertFalse($method->invoke($manager, 999999));
@@ -599,7 +588,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create a PID file with a PID that's not running
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke(
             $manager,
             'supervisor',
@@ -630,7 +619,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create a PID file with current PID (which IS running)
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke(
             $manager,
             'supervisor',
@@ -663,7 +652,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create a stale PID file
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke(
             $manager,
             'worker',
@@ -692,7 +681,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create PID file with current PID
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke(
             $manager,
             'worker',
@@ -732,7 +721,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create a PID file with a non-running PID
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke(
             $manager,
             'worker',
@@ -764,7 +753,7 @@ class ProcessManagerExtendedTest extends TestCase
 
         // Create a supervisor PID file with non-running PID
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke(
             $manager,
             'supervisor',
@@ -807,7 +796,6 @@ class ProcessManagerExtendedTest extends TestCase
     {
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'detectWithFullPs');
-        $method->setAccessible(true);
 
         $result = $method->invoke($manager);
 
@@ -819,7 +807,6 @@ class ProcessManagerExtendedTest extends TestCase
     {
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'detectWithRssOnlyPs');
-        $method->setAccessible(true);
 
         $result = $method->invoke($manager);
 
@@ -830,7 +817,6 @@ class ProcessManagerExtendedTest extends TestCase
     {
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'detectWithMinimalPs');
-        $method->setAccessible(true);
 
         $result = $method->invoke($manager);
 
@@ -850,7 +836,6 @@ class ProcessManagerExtendedTest extends TestCase
 
         $manager = new ProcessManager(['enabled' => true]);
         $method = new ReflectionMethod(ProcessManager::class, 'killProcess');
-        $method->setAccessible(true);
 
         // PID 999994 almost certainly does not exist
         // But killProcess sends SIGTERM which returns false for non-existent PIDs
@@ -894,7 +879,7 @@ class ProcessManagerExtendedTest extends TestCase
         $manager = new ProcessManager(['enabled' => true]);
 
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke(
             $manager,
             'worker',
@@ -934,7 +919,7 @@ class ProcessManagerExtendedTest extends TestCase
         $manager = new ProcessManager(['enabled' => true]);
 
         $savePidMethod = new ReflectionMethod(ProcessManager::class, 'savePidFile');
-        $savePidMethod->setAccessible(true);
+
         $savePidMethod->invoke(
             $manager,
             'worker',

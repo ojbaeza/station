@@ -149,7 +149,6 @@ class OpenTelemetryMeterTest extends TestCase
         // Inject the mock meter via reflection
         $reflection = new ReflectionClass($meter);
         $property = $reflection->getProperty('meter');
-        $property->setAccessible(true);
         $property->setValue($meter, $mockMeterObj);
 
         // Now test incrementCounter
@@ -216,7 +215,6 @@ class OpenTelemetryMeterTest extends TestCase
         // Inject the mock meter via reflection
         $reflection = new ReflectionClass($meter);
         $property = $reflection->getProperty('meter');
-        $property->setAccessible(true);
         $property->setValue($meter, $mockMeterObj);
 
         // Now test recordValue
@@ -283,7 +281,6 @@ class OpenTelemetryMeterTest extends TestCase
         // Inject the mock meter via reflection
         $reflection = new ReflectionClass($meter);
         $property = $reflection->getProperty('meter');
-        $property->setAccessible(true);
         $property->setValue($meter, $mockMeterObj);
 
         // Now test recordHistogram
@@ -341,7 +338,6 @@ class OpenTelemetryMeterTest extends TestCase
         // Inject the mock meter via reflection
         $reflection = new ReflectionClass($meter);
         $property = $reflection->getProperty('meter');
-        $property->setAccessible(true);
         $property->setValue($meter, $mockMeterObj);
 
         // Call incrementCounter multiple times with same name

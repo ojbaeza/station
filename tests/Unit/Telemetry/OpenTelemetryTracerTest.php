@@ -214,7 +214,6 @@ class OpenTelemetryTracerTest extends TestCase
         // Inject the mock tracer via reflection
         $reflection = new ReflectionClass($tracer);
         $property = $reflection->getProperty('tracer');
-        $property->setAccessible(true);
         $property->setValue($tracer, $mockTracerObj);
 
         // Now test startSpan with attributes
@@ -279,7 +278,6 @@ class OpenTelemetryTracerTest extends TestCase
         // Inject the mock tracer via reflection
         $reflection = new ReflectionClass($tracer);
         $property = $reflection->getProperty('tracer');
-        $property->setAccessible(true);
         $property->setValue($tracer, $mockTracerObj);
 
         // Start a span
@@ -340,7 +338,6 @@ class OpenTelemetryTracerTest extends TestCase
         // Inject the mock tracer via reflection
         $reflection = new ReflectionClass($tracer);
         $property = $reflection->getProperty('tracer');
-        $property->setAccessible(true);
         $property->setValue($tracer, $mockTracerObj);
 
         // Start a span with empty attributes

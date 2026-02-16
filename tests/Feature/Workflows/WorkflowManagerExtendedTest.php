@@ -64,7 +64,6 @@ class WorkflowManagerExtendedTest extends TestCase
         // Clear static tracking
         $ref = new ReflectionClass(WorkflowManager::class);
         $prop = $ref->getProperty('persistedInstances');
-        $prop->setAccessible(true);
         $prop->setValue($this->manager, []);
         parent::tearDown();
     }

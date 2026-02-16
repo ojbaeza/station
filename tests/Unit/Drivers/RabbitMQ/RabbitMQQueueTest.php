@@ -149,7 +149,6 @@ class RabbitMQQueueTest extends TestCase
     {
         $reflection = new ReflectionClass($this->queue);
         $method = $reflection->getMethod('getQueue');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->queue, null);
 
@@ -160,7 +159,6 @@ class RabbitMQQueueTest extends TestCase
     {
         $reflection = new ReflectionClass($this->queue);
         $method = $reflection->getMethod('getQueue');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->queue, 'custom-queue');
 
@@ -643,7 +641,6 @@ class RabbitMQQueueTest extends TestCase
         // Inject delayed exchange into the connection's exchanges array
         $ref = new ReflectionClass($conn);
         $exchangesProp = $ref->getProperty('exchanges');
-        $exchangesProp->setAccessible(true);
         $exchanges = $exchangesProp->getValue($conn);
         $exchanges['station.delayed'] = $delayedExchange;
         $exchangesProp->setValue($conn, $exchanges);
@@ -817,7 +814,6 @@ class RabbitMQQueueTest extends TestCase
         // Create a new queue with management_url - using driverConfig
         $ref = new ReflectionClass($sqQueue);
         $driverConfigProp = $ref->getProperty('driverConfig');
-        $driverConfigProp->setAccessible(true);
         $driverConfigProp->setValue($sqQueue, [
             'management_url' => 'http://nonexistent-host:15672',
             'user' => 'guest',
@@ -1152,7 +1148,6 @@ class RabbitMQQueueTest extends TestCase
 
         $ref = new ReflectionClass($sqQueue);
         $driverConfigProp = $ref->getProperty('driverConfig');
-        $driverConfigProp->setAccessible(true);
         $driverConfigProp->setValue($sqQueue, [
             'management_url' => 'http://nonexistent:15672',
             'management_user' => 'admin',
@@ -1177,7 +1172,6 @@ class RabbitMQQueueTest extends TestCase
 
         $ref = new ReflectionClass($sqQueue);
         $driverConfigProp = $ref->getProperty('driverConfig');
-        $driverConfigProp->setAccessible(true);
         $driverConfigProp->setValue($sqQueue, [
             'management_url' => 'http://nonexistent:15672',
             'vhost' => '/',
@@ -1230,10 +1224,8 @@ class RabbitMQQueueTest extends TestCase
         // We inject a wildcard entry for 'default' and 'test-queue' and 'my-queue' etc.
         // Since we use a Proxy approach, we just pre-fill commonly used names.
         $queuesProp = $ref->getProperty('queues');
-        $queuesProp->setAccessible(true);
 
         $exchangesProp = $ref->getProperty('exchanges');
-        $exchangesProp->setAccessible(true);
         $exchangesProp->setValue($conn, ['station.direct' => $amqpExchange]);
 
         // We need getQueue() to return our mock for ANY queue name.
@@ -1270,12 +1262,10 @@ class RabbitMQQueueTest extends TestCase
         $ref = new ReflectionClass($conn);
 
         $queuesProp = $ref->getProperty('queues');
-        $queuesProp->setAccessible(true);
         $queuesProp->setValue($conn, $queues);
 
         if ($exchanges !== []) {
             $exchangesProp = $ref->getProperty('exchanges');
-            $exchangesProp->setAccessible(true);
             $exchangesProp->setValue($conn, $exchanges);
         }
 

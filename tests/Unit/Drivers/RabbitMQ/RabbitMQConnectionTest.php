@@ -231,7 +231,6 @@ class RabbitMQConnectionTest extends TestCase
     {
         $reflection = new ReflectionClass($conn);
         $property = $reflection->getProperty('connection');
-        $property->setAccessible(true);
         $property->setValue($conn, $amqpConn);
     }
 
@@ -239,7 +238,6 @@ class RabbitMQConnectionTest extends TestCase
     {
         $reflection = new ReflectionClass($conn);
         $property = $reflection->getProperty('channel');
-        $property->setAccessible(true);
         $property->setValue($conn, $channel);
     }
 
@@ -247,7 +245,6 @@ class RabbitMQConnectionTest extends TestCase
     {
         $reflection = new ReflectionClass($conn);
         $property = $reflection->getProperty('exchanges');
-        $property->setAccessible(true);
         $exchanges = $property->getValue($conn);
         $exchanges[$name] = $exchange;
         $property->setValue($conn, $exchanges);
@@ -257,7 +254,6 @@ class RabbitMQConnectionTest extends TestCase
     {
         $reflection = new ReflectionClass($conn);
         $property = $reflection->getProperty('queues');
-        $property->setAccessible(true);
         $queues = $property->getValue($conn);
         $queues[$name] = $queue;
         $property->setValue($conn, $queues);

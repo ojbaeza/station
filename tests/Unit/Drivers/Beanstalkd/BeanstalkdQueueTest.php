@@ -274,7 +274,6 @@ class BeanstalkdQueueTest extends TestCase
 
         $reflection = new ReflectionClass($queue);
         $method = $reflection->getMethod('getQueue');
-        $method->setAccessible(true);
 
         $this->assertSame('my-default', $method->invoke($queue, null));
     }
@@ -286,7 +285,6 @@ class BeanstalkdQueueTest extends TestCase
 
         $reflection = new ReflectionClass($queue);
         $method = $reflection->getMethod('getQueue');
-        $method->setAccessible(true);
 
         $this->assertSame('custom-queue', $method->invoke($queue, 'custom-queue'));
     }
@@ -692,7 +690,6 @@ class BeanstalkdQueueTest extends TestCase
         // Expire the cache manually by setting cache time back
         $reflection = new ReflectionClass($queue);
         $cacheTimeProperty = $reflection->getProperty('pauseCacheTime');
-        $cacheTimeProperty->setAccessible(true);
         $cacheTimeProperty->setValue($queue, ['ttl-tube' => microtime(true) - 10.0]);
 
         // Change DB value

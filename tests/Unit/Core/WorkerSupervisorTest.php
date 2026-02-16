@@ -239,7 +239,7 @@ namespace Station\Tests\Unit\Core {
 
             $reflection = new ReflectionClass($supervisor);
             $property = $reflection->getProperty('shouldQuit');
-            $property->setAccessible(true);
+
 
             $this->assertTrue($property->getValue($supervisor));
         }
@@ -1243,7 +1243,7 @@ namespace Station\Tests\Unit\Core {
         {
             $reflection = new ReflectionClass($object);
             $method = $reflection->getMethod($method);
-            $method->setAccessible(true);
+
 
             return $method->invokeArgs($object, $args);
         }
@@ -1255,7 +1255,7 @@ namespace Station\Tests\Unit\Core {
         {
             $reflection = new ReflectionClass($object);
             $prop = $reflection->getProperty($property);
-            $prop->setAccessible(true);
+
 
             return $prop->getValue($object);
         }
@@ -1267,7 +1267,7 @@ namespace Station\Tests\Unit\Core {
         {
             $reflection = new ReflectionClass($object);
             $prop = $reflection->getProperty($property);
-            $prop->setAccessible(true);
+
             $prop->setValue($object, $value);
         }
     }

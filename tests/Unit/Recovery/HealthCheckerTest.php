@@ -782,7 +782,6 @@ class HealthCheckerTest extends TestCase
 
         // Use reflection to test probeConnection with an unreachable host
         $method = new ReflectionMethod($checker, 'probeConnection');
-        $method->setAccessible(true);
 
         // Port 59995 is almost certainly not listening
         $result = $method->invoke($checker, '127.0.0.1', 59995, 'redis', 1);
@@ -803,7 +802,6 @@ class HealthCheckerTest extends TestCase
         $checker->probeResults = ['127.0.0.1:12345' => true];
 
         $method = new ReflectionMethod($checker, 'probeConnection');
-        $method->setAccessible(true);
 
         $result = $method->invoke($checker, '127.0.0.1', 12345, 'unknown_driver');
 
@@ -818,7 +816,6 @@ class HealthCheckerTest extends TestCase
     {
         $checker = new HealthChecker($this->database, $this->queueManager, []);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         // Empty hosts array should fall back to host/port config
         $config = ['hosts' => [], 'host' => 'fallback.host', 'port' => 5673];
@@ -832,7 +829,6 @@ class HealthCheckerTest extends TestCase
     {
         $checker = new HealthChecker($this->database, $this->queueManager, []);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         // No hosts, no host, no port - should use defaults
         $config = [];
@@ -846,7 +842,6 @@ class HealthCheckerTest extends TestCase
     {
         $checker = new HealthChecker($this->database, $this->queueManager, []);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         $config = [];
         [$host, $port] = $method->invoke($checker, $config, 'beanstalkd');
@@ -864,7 +859,6 @@ class HealthCheckerTest extends TestCase
 
         $checker = new HealthChecker($this->database, $this->queueManager, []);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         // Redis uses connection name to look up database.redis config
         $config = ['connection' => 'default'];
@@ -881,7 +875,6 @@ class HealthCheckerTest extends TestCase
 
         $checker = new HealthChecker($this->database, $this->queueManager, []);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         $config = [];
         [$host, $port] = $method->invoke($checker, $config, 'redis');
@@ -895,7 +888,6 @@ class HealthCheckerTest extends TestCase
     {
         $checker = new HealthChecker($this->database, $this->queueManager, []);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         $config = ['brokers' => 'broker1:9092, broker2:9093, broker3:9094'];
         [$host, $port] = $method->invoke($checker, $config, 'kafka');
@@ -909,7 +901,6 @@ class HealthCheckerTest extends TestCase
     {
         $checker = new HealthChecker($this->database, $this->queueManager, []);
         $method = new ReflectionMethod($checker, 'extractHostPort');
-        $method->setAccessible(true);
 
         // Only host, no port separator
         $config = ['brokers' => 'kafka-only'];
@@ -1010,7 +1001,8 @@ class HealthCheckerTest extends TestCase
         $this->app['config']->set('queue.connections', [
             'db_queue' => [
                 'driver' => 'station-beanstalkd',
-                'host' => null, // Will still return host via defaults
+                'host' => '192.0.2.1', // RFC 5737 TEST-NET — guaranteed unreachable
+                'port' => 19999,
             ],
         ]);
         $this->app['config']->set('station.dashboard.driver_urls', []);
@@ -1020,8 +1012,7 @@ class HealthCheckerTest extends TestCase
         $connections = $checker->checkConnectivityQuick();
 
         $this->assertArrayHasKey('db_queue', $connections);
-        // Beanstalkd defaults to 127.0.0.1:11300, so it won't be null
-        // but the connection will fail (nothing listening)
+        // Non-routable host ensures connection always fails
         $this->assertFalse($connections['db_queue']->connected);
     }
 

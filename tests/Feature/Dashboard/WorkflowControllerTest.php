@@ -58,7 +58,6 @@ class WorkflowControllerTest extends TestCase
         // Clear persisted instance tracking (static property)
         $ref = new ReflectionClass(WorkflowManager::class);
         $prop = $ref->getProperty('persistedInstances');
-        $prop->setAccessible(true);
         $prop->setValue($this->workflowManager, []);
 
         Mockery::close();

@@ -579,7 +579,6 @@ class StationServiceProviderTest extends TestCase
     {
         $provider = new StationServiceProvider($this->app);
         $method = new ReflectionMethod($provider, 'extractStationJobId');
-        $method->setAccessible(true);
 
         return $method->invoke($provider, $payload);
     }
@@ -588,7 +587,6 @@ class StationServiceProviderTest extends TestCase
     {
         $provider = new StationServiceProvider($this->app);
         $method = new ReflectionMethod($provider, 'extractBatchId');
-        $method->setAccessible(true);
 
         return $method->invoke($provider, $payload);
     }

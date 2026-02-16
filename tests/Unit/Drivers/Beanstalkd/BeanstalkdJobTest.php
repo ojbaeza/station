@@ -346,7 +346,6 @@ class BeanstalkdJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -361,7 +360,6 @@ class BeanstalkdJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -376,7 +374,6 @@ class BeanstalkdJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 
@@ -391,7 +388,6 @@ class BeanstalkdJobTest extends TestCase
 
         $reflection = new ReflectionClass($job);
         $method = $reflection->getMethod('parseJobClassAndMethod');
-        $method->setAccessible(true);
 
         $result = $method->invoke($job, $job->payload());
 

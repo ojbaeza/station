@@ -110,7 +110,6 @@ class DriverRegistrationTest extends TestCase
 
         $reflection = new ReflectionClass($manager);
         $property = $reflection->getProperty('connectors');
-        $property->setAccessible(true);
 
         $connectors = $property->getValue($manager);
 
