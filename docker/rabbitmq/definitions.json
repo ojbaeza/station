@@ -1,0 +1,204 @@
+{
+  "users": [
+    {
+      "name": "station",
+      "password_hash": "YNknr3W5NWWoTfszQV2E2fK8tKIbBzOLEPCkvLDxnxSxEPP4",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"]
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "station"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "station",
+      "vhost": "station",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "station.direct",
+      "vhost": "station",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false
+    },
+    {
+      "name": "station.delayed",
+      "vhost": "station",
+      "type": "x-delayed-message",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-delayed-type": "direct"
+      }
+    },
+    {
+      "name": "station.dlx",
+      "vhost": "station",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false
+    }
+  ],
+  "queues": [
+    {
+      "name": "default",
+      "vhost": "station",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "station.dlx",
+        "x-dead-letter-routing-key": "default.dlq"
+      }
+    },
+    {
+      "name": "station.default",
+      "vhost": "station",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "station.dlx",
+        "x-dead-letter-routing-key": "station.default.dlq"
+      }
+    },
+    {
+      "name": "station.high",
+      "vhost": "station",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "station.dlx",
+        "x-dead-letter-routing-key": "station.high.dlq",
+        "x-max-priority": 10
+      }
+    },
+    {
+      "name": "station.low",
+      "vhost": "station",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "station.dlx",
+        "x-dead-letter-routing-key": "station.low.dlq"
+      }
+    },
+    {
+      "name": "default.dlq",
+      "vhost": "station",
+      "durable": true,
+      "auto_delete": false
+    },
+    {
+      "name": "station.default.dlq",
+      "vhost": "station",
+      "durable": true,
+      "auto_delete": false
+    },
+    {
+      "name": "station.high.dlq",
+      "vhost": "station",
+      "durable": true,
+      "auto_delete": false
+    },
+    {
+      "name": "station.low.dlq",
+      "vhost": "station",
+      "durable": true,
+      "auto_delete": false
+    }
+  ],
+  "bindings": [
+    {
+      "source": "station.direct",
+      "vhost": "station",
+      "destination": "default",
+      "destination_type": "queue",
+      "routing_key": "default"
+    },
+    {
+      "source": "station.direct",
+      "vhost": "station",
+      "destination": "station.default",
+      "destination_type": "queue",
+      "routing_key": "station.default"
+    },
+    {
+      "source": "station.direct",
+      "vhost": "station",
+      "destination": "station.high",
+      "destination_type": "queue",
+      "routing_key": "high"
+    },
+    {
+      "source": "station.direct",
+      "vhost": "station",
+      "destination": "station.low",
+      "destination_type": "queue",
+      "routing_key": "low"
+    },
+    {
+      "source": "station.dlx",
+      "vhost": "station",
+      "destination": "default.dlq",
+      "destination_type": "queue",
+      "routing_key": "default.dlq"
+    },
+    {
+      "source": "station.dlx",
+      "vhost": "station",
+      "destination": "station.default.dlq",
+      "destination_type": "queue",
+      "routing_key": "station.default.dlq"
+    },
+    {
+      "source": "station.dlx",
+      "vhost": "station",
+      "destination": "station.high.dlq",
+      "destination_type": "queue",
+      "routing_key": "station.high.dlq"
+    },
+    {
+      "source": "station.dlx",
+      "vhost": "station",
+      "destination": "station.low.dlq",
+      "destination_type": "queue",
+      "routing_key": "station.low.dlq"
+    },
+    {
+      "source": "station.delayed",
+      "vhost": "station",
+      "destination": "default",
+      "destination_type": "queue",
+      "routing_key": "default"
+    },
+    {
+      "source": "station.delayed",
+      "vhost": "station",
+      "destination": "station.default",
+      "destination_type": "queue",
+      "routing_key": "station.default"
+    },
+    {
+      "source": "station.delayed",
+      "vhost": "station",
+      "destination": "station.high",
+      "destination_type": "queue",
+      "routing_key": "high"
+    },
+    {
+      "source": "station.delayed",
+      "vhost": "station",
+      "destination": "station.low",
+      "destination_type": "queue",
+      "routing_key": "low"
+    }
+  ],
+  "policies": []
+}

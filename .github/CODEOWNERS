@@ -1,0 +1,22 @@
+# Code Owners for Station
+# These users will be automatically requested for review on PRs
+
+# Default owners for everything
+* @ojbaeza
+
+# Documentation
+*.md @ojbaeza
+/docs/ @ojbaeza
+
+# Core functionality
+/src/Core/ @ojbaeza
+/src/Drivers/ @ojbaeza
+/src/Recovery/ @ojbaeza
+
+# Dashboard
+/src/Dashboard/ @ojbaeza
+/resources/ @ojbaeza
+
+# Configuration and CI
+/.github/ @ojbaeza
+/docker/ @ojbaeza

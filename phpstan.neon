@@ -1,0 +1,26 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - src
+    level: 8
+    ignoreErrors:
+        # OpenTelemetry is an optional dependency
+        - '#Call to static method .+\(\) on an unknown class OpenTelemetry\\#'
+
+        # WithStation trait is used by package consumers
+        - '#Trait Station\\Testing\\WithStation is used zero times#'
+
+        # Laravel Application supports array access (factory closures receive contract type)
+        - '#Cannot access offset .+ on Illuminate\\Contracts\\Foundation\\Application#'
+
+        # Properties used for job serialization
+        - '#Property Station\\Workflows\\WorkflowBranchJob::\$.+ is never read, only written#'
+
+        # Larastan collection type inference issues
+        - '#should return Illuminate\\Support\\Collection<int, array<string, mixed>> but returns Illuminate\\Support\\Collection<int, array>#'
+        - '#Called .pluck. on Laravel collection, but could have been retrieved as a query#'
+
+        # Missing array key type specifications (false positives)
+        - '#has parameter \$.+ with no value type specified in iterable type array#'

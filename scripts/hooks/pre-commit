@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Pre-commit hook: Run static analysis and code style checks
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+echo ""
+
+# Check if Docker container is running
+if ! docker ps --format '{{.Names}}' | grep -q '^station_php$'; then
+    echo "❌ Error: station_php container is not running"
+    echo "   Run: docker compose up -d"
+    exit 1
+fi
+
+# Run PHPStan
+echo "📊 Running PHPStan static analysis..."
+if ! docker exec station_php sh -c "./vendor/bin/phpstan analyse --memory-limit=512M --no-progress"; then
+    echo ""
+    echo "❌ PHPStan found errors. Please fix them before committing."
+    exit 1
+fi
+echo "✅ PHPStan passed"
+echo ""
+
+# Run code style check
+echo "🎨 Running code style check..."
+if ! docker exec station_php sh -c "./vendor/bin/php-cs-fixer fix --dry-run --diff"; then
+    echo ""
+    echo "❌ Code style issues found. Run 'composer cs-fix' to fix them."
+    exit 1
+fi
+echo "✅ Code style passed"
+echo ""
+
+echo "✅ All pre-commit checks passed!"

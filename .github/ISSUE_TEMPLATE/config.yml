@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/ojbaeza/station#readme
+    about: Read the documentation before opening an issue
+  - name: Discussions
+    url: https://github.com/ojbaeza/station/discussions
+    about: Ask questions and discuss ideas
+  - name: Security Vulnerabilities
+    url: https://github.com/ojbaeza/station/security/advisories
+    about: Report security issues privately (do not open public issues)

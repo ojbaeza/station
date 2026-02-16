@@ -1,0 +1,115 @@
+{
+    "name": "ojbaeza/station",
+    "description": "A comprehensive Laravel queue management package with multi-driver support (RabbitMQ, Redis, SQS, Beanstalkd, Kafka), job recovery, and real-time dashboard",
+    "keywords": [
+        "laravel",
+        "queue",
+        "rabbitmq",
+        "redis",
+        "sqs",
+        "beanstalkd",
+        "kafka",
+        "horizon",
+        "job",
+        "worker",
+        "supervisor",
+        "dashboard"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/ojbaeza/station",
+    "support": {
+        "issues": "https://github.com/ojbaeza/station/issues",
+        "source": "https://github.com/ojbaeza/station"
+    },
+    "authors": [
+        {
+            "name": "OJ Baeza",
+            "email": "dev@ojbaeza.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "ext-pcntl": "*",
+        "ext-posix": "*",
+        "illuminate/bus": "^11.0 || ^12.0",
+        "illuminate/contracts": "^11.0 || ^12.0",
+        "illuminate/database": "^11.0 || ^12.0",
+        "illuminate/queue": "^11.0 || ^12.0",
+        "illuminate/support": "^11.0 || ^12.0",
+        "ramsey/uuid": "^4.7"
+    },
+    "suggest": {
+        "ext-amqp": "Required to use RabbitMQ driver",
+        "ext-sockets": "Required for some queue drivers",
+        "ext-rdkafka": "Required to use Apache Kafka driver",
+        "aws/aws-sdk-php": "Required to use Amazon SQS driver (^3.0)",
+        "inertiajs/inertia-laravel": "Required for the Station dashboard (^2.0)",
+        "pda/pheanstalk": "Required to use Beanstalkd driver (^8.0)"
+    },
+    "require-dev": {
+        "aws/aws-sdk-php": "^3.0",
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "inertiajs/inertia-laravel": "^2.0",
+        "larastan/larastan": "^3.0",
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^9.0 || ^10.0",
+        "pda/pheanstalk": "^8.0",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^12"
+    },
+    "autoload": {
+        "psr-4": {
+            "Station\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Station\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "@php vendor/bin/phpunit",
+        "test:unit": "@php vendor/bin/phpunit --testsuite=Unit",
+        "test:feature": "@php vendor/bin/phpunit --testsuite=Feature",
+        "test:integration": "@php vendor/bin/phpunit --testsuite=Integration",
+        "test:coverage": "@php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html coverage",
+        "analyse": "vendor/bin/phpstan analyse",
+        "cs-check": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "vendor/bin/php-cs-fixer fix",
+        "quality": [
+            "@analyse",
+            "@cs-check",
+            "@test"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Station\\StationServiceProvider"
+            ],
+            "aliases": {
+                "Station": "Station\\Facades\\Station",
+                "Batch": "Station\\Facades\\Batch",
+                "Chain": "Station\\Facades\\Chain",
+                "Queues": "Station\\Facades\\Queues",
+                "Monitor": "Station\\Facades\\Monitor",
+                "Recovery": "Station\\Facades\\Recovery",
+                "Workflow": "Station\\Facades\\Workflow"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/ojbaeza"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

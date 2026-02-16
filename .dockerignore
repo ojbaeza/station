@@ -1,0 +1,45 @@
+# Dependencies
+/vendor
+/node_modules
+
+# Build artifacts
+/public/build
+/public/hot
+
+# IDE
+/.idea
+/.vscode
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+
+# Testing
+/coverage
+/.phpunit.result.cache
+/.php-cs-fixer.cache
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+/storage/logs/*
+
+# Cache
+/bootstrap/cache/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Docker volumes (handled separately)
+/docker/**/data

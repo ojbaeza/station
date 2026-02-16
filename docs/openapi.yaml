@@ -1,0 +1,1796 @@
+openapi: 3.1.0
+info:
+  title: Station API
+  description: |
+    REST API for Station - Laravel queue management package.
+
+    Authentication is configurable via `station.api.auth`:
+    - `token` — requires `Authorization: Bearer <token>` header
+    - `none` — no authentication (development only)
+  version: 0.1.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: OJ Baeza
+    url: https://github.com/ojbaeza/station
+
+servers:
+  - url: '{baseUrl}/api/station'
+    description: Station API
+    variables:
+      baseUrl:
+        default: http://localhost
+        description: Application base URL
+
+tags:
+  - name: Dashboard
+    description: Dashboard statistics
+  - name: Jobs
+    description: Job management
+  - name: Failed Jobs
+    description: Failed job management
+  - name: Batches
+    description: Batch job management
+  - name: Monitoring
+    description: Health and metrics
+  - name: Metrics
+    description: Enhanced metrics and time-series data
+  - name: Queues
+    description: Queue management (pause/resume)
+  - name: Drivers
+    description: Driver connectivity and information
+  - name: Workers
+    description: Worker process management
+  - name: Supervisors
+    description: Supervisor process management
+  - name: Recovery
+    description: Job recovery operations
+  - name: Stuck Jobs
+    description: Stuck job detection and recovery
+  - name: Workflows
+    description: Workflow management
+
+paths:
+  # ── Dashboard ──────────────────────────────────────────────────
+  /stats:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard statistics
+      operationId: getStats
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+
+  # ── Jobs ───────────────────────────────────────────────────────
+  /jobs:
+    get:
+      tags: [Jobs]
+      summary: List jobs
+      operationId: listJobs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, reserved, processing, completed, failed]
+        - name: queue
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated list of jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobList'
+
+  /jobs/{id}:
+    get:
+      tags: [Jobs]
+      summary: Get job details
+      operationId: getJob
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /jobs/{id}/retry:
+    post:
+      tags: [Jobs]
+      summary: Retry a job
+      operationId: retryJob
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Job queued for retry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /jobs/{id}/cancel:
+    post:
+      tags: [Jobs]
+      summary: Cancel a job
+      operationId: cancelJob
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Job cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /jobs/bulk/cancel:
+    post:
+      tags: [Jobs]
+      summary: Cancel multiple jobs
+      operationId: bulkCancelJobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk cancel result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /jobs/bulk/retry:
+    post:
+      tags: [Jobs]
+      summary: Retry multiple jobs
+      operationId: bulkRetryJobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk retry result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /jobs/bulk/delete:
+    post:
+      tags: [Jobs]
+      summary: Delete multiple jobs
+      operationId: bulkDeleteJobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk delete result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── Failed Jobs ────────────────────────────────────────────────
+  /failed:
+    get:
+      tags: [Failed Jobs]
+      summary: List failed jobs
+      operationId: listFailedJobs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated list of failed jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FailedJobList'
+    delete:
+      tags: [Failed Jobs]
+      summary: Flush all failed jobs
+      operationId: flushFailedJobs
+      responses:
+        '200':
+          description: All failed jobs deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /failed/{id}/retry:
+    post:
+      tags: [Failed Jobs]
+      summary: Retry a failed job
+      operationId: retryFailedJob
+      parameters:
+        - $ref: '#/components/parameters/FailedJobId'
+      responses:
+        '200':
+          description: Failed job queued for retry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /failed/{id}:
+    delete:
+      tags: [Failed Jobs]
+      summary: Delete a failed job
+      operationId: deleteFailedJob
+      parameters:
+        - $ref: '#/components/parameters/FailedJobId'
+      responses:
+        '200':
+          description: Failed job deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /failed/retry-all:
+    post:
+      tags: [Failed Jobs]
+      summary: Retry all failed jobs
+      operationId: retryAllFailedJobs
+      responses:
+        '200':
+          description: All failed jobs queued for retry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /failed/bulk/retry:
+    post:
+      tags: [Failed Jobs]
+      summary: Retry multiple failed jobs
+      operationId: bulkRetryFailed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk retry result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /failed/bulk/delete:
+    post:
+      tags: [Failed Jobs]
+      summary: Delete multiple failed jobs
+      operationId: bulkDeleteFailed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk delete result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── Batches ────────────────────────────────────────────────────
+  /batches:
+    get:
+      tags: [Batches]
+      summary: List batches
+      operationId: listBatches
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated list of batches
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchList'
+
+  /batches/{id}:
+    get:
+      tags: [Batches]
+      summary: Get batch details
+      operationId: getBatch
+      parameters:
+        - $ref: '#/components/parameters/BatchId'
+      responses:
+        '200':
+          description: Batch details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /batches/{id}/cancel:
+    post:
+      tags: [Batches]
+      summary: Cancel a batch
+      operationId: cancelBatch
+      parameters:
+        - $ref: '#/components/parameters/BatchId'
+      responses:
+        '200':
+          description: Batch cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /batches/{id}/retry:
+    post:
+      tags: [Batches]
+      summary: Retry failed jobs in a batch
+      operationId: retryBatch
+      parameters:
+        - $ref: '#/components/parameters/BatchId'
+      responses:
+        '200':
+          description: Batch jobs queued for retry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /batches/bulk/cancel:
+    post:
+      tags: [Batches]
+      summary: Cancel multiple batches
+      operationId: bulkCancelBatches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk cancel result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /batches/bulk/retry:
+    post:
+      tags: [Batches]
+      summary: Retry multiple batches
+      operationId: bulkRetryBatches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk retry result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /batches/bulk/delete:
+    post:
+      tags: [Batches]
+      summary: Delete multiple batches
+      operationId: bulkDeleteBatches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk delete result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── Monitoring ─────────────────────────────────────────────────
+  /monitoring:
+    get:
+      tags: [Monitoring]
+      summary: Get monitoring data
+      operationId: getMonitoring
+      responses:
+        '200':
+          description: Monitoring data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringData'
+
+  /health:
+    get:
+      tags: [Monitoring]
+      summary: Health check endpoint
+      operationId: getHealth
+      responses:
+        '200':
+          description: System healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '503':
+          description: System unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+  /metrics:
+    get:
+      tags: [Metrics]
+      summary: Get aggregated metrics
+      operationId: getMetrics
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [5m, 15m, 1h, 6h, 24h, 7d]
+            default: 1h
+          description: Time period for metrics
+      responses:
+        '200':
+          description: Aggregated metrics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+
+  /metrics/time-series:
+    get:
+      tags: [Metrics]
+      summary: Get time-series metrics
+      operationId: getMetricsTimeSeries
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [5m, 15m, 1h, 6h, 24h, 7d]
+            default: 1h
+          description: Time period
+        - name: buckets
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+          description: Number of time buckets
+      responses:
+        '200':
+          description: Time-series metrics data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeSeries'
+
+  /metrics/driver-info:
+    get:
+      tags: [Metrics]
+      summary: Get per-driver detailed info
+      operationId: getMetricsDriverInfo
+      responses:
+        '200':
+          description: Per-driver detailed statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/DriverInfo'
+
+  # ── Drivers ────────────────────────────────────────────────────
+  /drivers:
+    get:
+      tags: [Drivers]
+      summary: Get driver connectivity status
+      operationId: getDrivers
+      responses:
+        '200':
+          description: Driver connectivity status for all configured connections
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/DriverStatus'
+
+  # ── Workers ────────────────────────────────────────────────────
+  /workers/status:
+    get:
+      tags: [Workers]
+      summary: Get worker status per connection
+      operationId: getWorkerStatus
+      responses:
+        '200':
+          description: Worker status for each connection
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/WorkerStatus'
+
+  /workers/start:
+    post:
+      tags: [Workers]
+      summary: Start workers for a connection
+      operationId: startWorker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [connection]
+              properties:
+                connection:
+                  type: string
+                  description: Queue connection name
+                queue:
+                  type: string
+                  default: default
+                  description: Queue name
+                workers:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                  description: Number of workers to start
+      responses:
+        '200':
+          description: Workers started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /workers/stop:
+    post:
+      tags: [Workers]
+      summary: Stop workers for a connection
+      operationId: stopWorker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [connection]
+              properties:
+                connection:
+                  type: string
+                  description: Queue connection name
+      responses:
+        '200':
+          description: Workers stopped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /workers/stop-external:
+    post:
+      tags: [Workers]
+      summary: Stop an external worker by PID
+      operationId: stopExternalWorker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pid]
+              properties:
+                pid:
+                  type: integer
+                  description: Process ID of the worker to stop
+      responses:
+        '200':
+          description: Worker stopped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # ── Supervisor ─────────────────────────────────────────────────
+  /supervisor/status:
+    get:
+      tags: [Supervisors]
+      summary: Get supervisor status
+      operationId: getSupervisorStatus
+      responses:
+        '200':
+          description: Supervisor status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupervisorStatus'
+
+  /supervisor/start:
+    post:
+      tags: [Supervisors]
+      summary: Start supervisor
+      operationId: startSupervisor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [connection]
+              properties:
+                connection:
+                  type: string
+                  description: Queue connection name
+                queue:
+                  type: string
+                  default: default
+                  description: Queue name
+                workers:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                  description: Number of workers
+      responses:
+        '200':
+          description: Supervisor started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /supervisor/stop:
+    post:
+      tags: [Supervisors]
+      summary: Stop supervisor
+      operationId: stopSupervisor
+      responses:
+        '200':
+          description: Supervisor stopped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  # ── Queues ─────────────────────────────────────────────────────
+  /queues/pause:
+    post:
+      tags: [Queues]
+      summary: Pause a queue
+      operationId: pauseQueue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [queue]
+              properties:
+                queue:
+                  type: string
+                  description: Queue name to pause
+                connection:
+                  type: string
+                  description: Connection name (optional, uses default if omitted)
+      responses:
+        '200':
+          description: Queue paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /queues/resume:
+    post:
+      tags: [Queues]
+      summary: Resume a queue
+      operationId: resumeQueue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [queue]
+              properties:
+                queue:
+                  type: string
+                  description: Queue name to resume
+                connection:
+                  type: string
+                  description: Connection name (optional, uses default if omitted)
+      responses:
+        '200':
+          description: Queue resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /queues/pause-status:
+    get:
+      tags: [Queues]
+      summary: Get pause state for all connections
+      operationId: getQueuePauseStatus
+      responses:
+        '200':
+          description: Pause status for all connections and queues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueuePauseStatus'
+
+  # ── Recovery ───────────────────────────────────────────────────
+  /recover:
+    post:
+      tags: [Recovery]
+      summary: Recover stuck jobs
+      operationId: recoverStuckJobs
+      responses:
+        '200':
+          description: Recovery initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  recovered:
+                    type: integer
+                    description: Number of jobs recovered
+
+  # ── Stuck Jobs ─────────────────────────────────────────────────
+  /stuck:
+    get:
+      tags: [Stuck Jobs]
+      summary: List stuck jobs
+      operationId: listStuckJobs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - name: queue
+          in: query
+          schema:
+            type: string
+          description: Filter by queue name
+        - name: threshold
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+          description: Stuck threshold in seconds
+      responses:
+        '200':
+          description: List of stuck jobs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StuckJob'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /stuck/{id}/recover:
+    post:
+      tags: [Stuck Jobs]
+      summary: Recover a single stuck job
+      operationId: recoverStuckJob
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                strategy:
+                  type: string
+                  enum: [graceful, restart, checkpoint]
+                  default: graceful
+                  description: Recovery strategy
+      responses:
+        '200':
+          description: Job recovered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /stuck/bulk/recover:
+    post:
+      tags: [Stuck Jobs]
+      summary: Recover multiple stuck jobs
+      operationId: bulkRecoverStuckJobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkRecoverRequest'
+      responses:
+        '200':
+          description: Bulk recover result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ── Workflows ──────────────────────────────────────────────────
+  /workflows/run:
+    post:
+      tags: [Workflows]
+      summary: Run a workflow asynchronously
+      operationId: runWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [definition]
+              properties:
+                definition:
+                  type: string
+                  description: Workflow definition name
+                connection:
+                  type: string
+                  nullable: true
+                  description: Queue connection for async dispatch (optional)
+      responses:
+        '200':
+          description: Workflow instance created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Workflow instance ID
+                  status:
+                    type: string
+                    enum: [pending, running]
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /workflows/{name}/{id}/status:
+    get:
+      tags: [Workflows]
+      summary: Get workflow status
+      operationId: getWorkflowStatus
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workflow name
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workflow instance ID
+      responses:
+        '200':
+          description: Workflow status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /workflows/{id}/pause:
+    post:
+      tags: [Workflows]
+      summary: Pause a workflow
+      operationId: pauseWorkflow
+      parameters:
+        - $ref: '#/components/parameters/WorkflowId'
+      responses:
+        '200':
+          description: Workflow paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /workflows/{id}/resume:
+    post:
+      tags: [Workflows]
+      summary: Resume a workflow
+      operationId: resumeWorkflow
+      parameters:
+        - $ref: '#/components/parameters/WorkflowId'
+      responses:
+        '200':
+          description: Workflow resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /workflows/{id}/cancel:
+    post:
+      tags: [Workflows]
+      summary: Cancel a workflow
+      operationId: cancelWorkflow
+      parameters:
+        - $ref: '#/components/parameters/WorkflowId'
+      responses:
+        '200':
+          description: Workflow cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /workflows/bulk/pause:
+    post:
+      tags: [Workflows]
+      summary: Pause multiple workflows
+      operationId: bulkPauseWorkflows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk pause result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /workflows/bulk/resume:
+    post:
+      tags: [Workflows]
+      summary: Resume multiple workflows
+      operationId: bulkResumeWorkflows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk resume result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /workflows/bulk/cancel:
+    post:
+      tags: [Workflows]
+      summary: Cancel multiple workflows
+      operationId: bulkCancelWorkflows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIdsRequest'
+      responses:
+        '200':
+          description: Bulk cancel result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  parameters:
+    JobId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Job ID
+
+    FailedJobId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Failed job ID
+
+    BatchId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Batch ID
+
+    WorkflowId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Workflow ID
+
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number
+
+    PerPageParam:
+      name: per_page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+      description: Items per page (max 100)
+
+  schemas:
+    # ── Dashboard ──────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      properties:
+        jobs_per_minute:
+          type: number
+        recent_jobs:
+          type: integer
+        failed_jobs:
+          type: integer
+        pending_jobs:
+          type: integer
+        processed_jobs:
+          type: integer
+        queues:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueStats'
+        pausedQueues:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueuePauseStatus'
+
+    QueueStats:
+      type: object
+      properties:
+        name:
+          type: string
+        size:
+          type: integer
+        wait_time:
+          type: number
+          description: Average wait time in seconds
+
+    # ── Jobs ───────────────────────────────────────────────────
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        queue:
+          type: string
+        connection:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, reserved, processing, completed, failed]
+        payload:
+          type: object
+        attempts:
+          type: integer
+        max_tries:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    JobList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── Failed Jobs ────────────────────────────────────────────
+    FailedJob:
+      type: object
+      properties:
+        id:
+          type: string
+        uuid:
+          type: string
+          format: uuid
+        connection:
+          type: string
+        queue:
+          type: string
+        payload:
+          type: object
+        exception:
+          type: string
+        failed_at:
+          type: string
+          format: date-time
+
+    FailedJobList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailedJob'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── Batches ────────────────────────────────────────────────
+    Batch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        total_jobs:
+          type: integer
+        pending_jobs:
+          type: integer
+        processed_jobs:
+          type: integer
+        failed_jobs:
+          type: integer
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        cancelled:
+          type: boolean
+        finished:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        cancelled_at:
+          type: string
+          format: date-time
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    BatchList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Batch'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── Monitoring ─────────────────────────────────────────────
+    MonitoringData:
+      type: object
+      properties:
+        workers:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitoringWorker'
+        throughput:
+          type: object
+          properties:
+            jobs_per_minute:
+              type: number
+            jobs_per_hour:
+              type: number
+        memory:
+          type: object
+          properties:
+            used:
+              type: integer
+            peak:
+              type: integer
+
+    MonitoringWorker:
+      type: object
+      properties:
+        id:
+          type: string
+        pid:
+          type: integer
+        queue:
+          type: string
+        status:
+          type: string
+          enum: [idle, processing, paused]
+        memory:
+          type: integer
+        started_at:
+          type: string
+          format: date-time
+
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy, degraded, warning]
+        checks:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [pass, fail, warn]
+              message:
+                type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    # ── Metrics ────────────────────────────────────────────────
+    MetricsResponse:
+      type: object
+      properties:
+        throughput:
+          type: number
+          description: Jobs per minute
+        jobsProcessed:
+          type: integer
+        jobsFailed:
+          type: integer
+        failureRate:
+          type: number
+        avgWaitTime:
+          type: number
+        avgProcessingTime:
+          type: number
+        timeSeries:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSeries'
+        queueBreakdown:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              size:
+                type: integer
+              throughput:
+                type: number
+              workers:
+                type: integer
+              paused:
+                type: boolean
+        driverInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DriverInfo'
+
+    TimeSeries:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        jobs_processed:
+          type: integer
+        jobs_failed:
+          type: integer
+        avg_wait_time:
+          type: number
+        avg_processing_time:
+          type: number
+
+    # ── Drivers ────────────────────────────────────────────────
+    DriverStatus:
+      type: object
+      properties:
+        connection:
+          type: string
+        driver:
+          type: string
+          enum: [rabbitmq, redis, sqs, beanstalkd, kafka]
+        connected:
+          type: boolean
+        latency_ms:
+          type: integer
+          description: TCP connectivity latency in milliseconds
+        dashboard_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to driver management dashboard
+
+    DriverInfo:
+      type: object
+      description: Per-driver extended statistics. Fields vary by driver type.
+      properties:
+        connection:
+          type: string
+        driver:
+          type: string
+          enum: [rabbitmq, redis, sqs, beanstalkd, kafka]
+        size:
+          type: integer
+          description: Total queue size
+        error:
+          type: string
+          nullable: true
+          description: Error message if connection failed
+        # RabbitMQ fields
+        management_api:
+          type: boolean
+          description: Whether RabbitMQ Management API is available
+        messages_ready:
+          type: integer
+        messages_unacked:
+          type: integer
+        consumers:
+          type: integer
+        publish_rate:
+          type: number
+        deliver_rate:
+          type: number
+        memory:
+          type: integer
+          description: Queue memory usage in bytes
+        dlq_size:
+          type: integer
+          description: Dead letter queue size
+        # Redis fields
+        ready:
+          type: integer
+        delayed:
+          type: integer
+        reserved:
+          type: integer
+        memory_used:
+          type: integer
+        memory_peak:
+          type: integer
+        connected_clients:
+          type: integer
+        ops_per_sec:
+          type: integer
+        # SQS fields
+        visible:
+          type: integer
+        in_flight:
+          type: integer
+        visibility_timeout:
+          type: integer
+        retention_period:
+          type: integer
+        arn:
+          type: string
+        # Beanstalkd fields
+        buried:
+          type: integer
+        total_jobs:
+          type: integer
+        watchers:
+          type: integer
+        # Kafka fields
+        brokers:
+          type: integer
+        partitions:
+          type: integer
+        consumer_lag:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Per-partition consumer lag
+        total_lag:
+          type: integer
+        total_messages:
+          type: integer
+
+    # ── Workers ────────────────────────────────────────────────
+    WorkerStatus:
+      type: object
+      properties:
+        connection:
+          type: string
+        running:
+          type: boolean
+        pid:
+          type: integer
+          nullable: true
+        workers:
+          type: integer
+          description: Number of worker processes
+        external_workers:
+          type: array
+          items:
+            type: object
+            properties:
+              pid:
+                type: integer
+              command:
+                type: string
+
+    # ── Supervisor ─────────────────────────────────────────────
+    SupervisorStatus:
+      type: object
+      properties:
+        running:
+          type: boolean
+        pid:
+          type: integer
+          nullable: true
+        connection:
+          type: string
+          nullable: true
+        queue:
+          type: string
+          nullable: true
+        workers:
+          type: integer
+
+    # ── Queues ─────────────────────────────────────────────────
+    QueuePauseStatus:
+      type: object
+      properties:
+        connection:
+          type: string
+        queue:
+          type: string
+        paused:
+          type: boolean
+
+    # ── Stuck Jobs ─────────────────────────────────────────────
+    StuckJob:
+      allOf:
+        - $ref: '#/components/schemas/Job'
+        - type: object
+          properties:
+            stuck_duration:
+              type: integer
+              description: How long the job has been stuck (seconds)
+            stuck_score:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Stuck probability score (0-1)
+
+    # ── Workflows ──────────────────────────────────────────────
+    WorkflowStatusResponse:
+      type: object
+      description: Response from WorkflowManager::status(). Only contains status, current_step, progress, and error.
+      properties:
+        status:
+          type: string
+          enum: [pending, running, paused, completed, failed, cancelled]
+        current_step:
+          type: string
+          nullable: true
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Percentage of steps completed or skipped
+        error:
+          type: string
+          nullable: true
+          description: Error message if workflow failed
+
+    # ── Bulk Operations ────────────────────────────────────────
+    BulkIdsRequest:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 100
+          description: Array of resource IDs (max 100)
+
+    BulkRecoverRequest:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 100
+          description: Array of stuck job IDs (max 100)
+        strategy:
+          type: string
+          enum: [graceful, restart, checkpoint]
+          default: graceful
+          description: Recovery strategy to apply
+
+    BulkActionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        processed:
+          type: integer
+          description: Number of items successfully processed
+        failed:
+          type: integer
+          description: Number of items that failed
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              message:
+                type: string
+
+    # ── Common ─────────────────────────────────────────────────
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+        from:
+          type: integer
+          nullable: true
+        to:
+          type: integer
+          nullable: true
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        count:
+          type: integer
+          description: Number of items affected (when applicable)
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: The requested resource was not found
+
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Invalid request parameters
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Authentication required
+
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until rate limit resets
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Rate limit per minute
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Too many requests
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Bearer token authentication. Set `STATION_API_TOKEN` in your `.env`
+        and configure `station.api.auth` to `token`.
+
+    sanctum:
+      type: apiKey
+      in: cookie
+      name: laravel_session
+      description: Laravel Sanctum session authentication
+
+security:
+  - bearerAuth: []
+  - sanctum: []

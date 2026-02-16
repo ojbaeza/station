@@ -1,0 +1,64 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.phpunit.result.cache
+
+# IDE
+/.idea/
+/.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/dist/
+/build/
+/public/hot
+/public/storage
+/storage/*.key
+
+# Laravel
+bootstrap/cache/*
+!bootstrap/cache/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+/coverage/
+.phpunit.cache/
+coverage.xml
+clover.xml
+
+# Package development
+composer.lock
+package-lock.json
+
+# PHPStan
+phpstan.neon.local
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+
+# Temporary files
+*.tmp
+*.temp
+
+# Claude
+.claude/
+CLAUDE.md
+
+# Example
+example/*

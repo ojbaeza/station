@@ -1,0 +1,235 @@
+# DEVELOPMENT ONLY — Do not use these credentials in production.
+# See docs/security.md for production deployment guidance.
+
+services:
+  # ===========================================
+  # PHP Application Container
+  # ===========================================
+  php:
+    container_name: station_php
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      - APP_ENV=local
+      - XDEBUG_MODE=off
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      beanstalkd:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    networks:
+      - station
+
+  # ===========================================
+  # Phase 1.0 - RabbitMQ Driver
+  # ===========================================
+  rabbitmq:
+    container_name: station_rabbitmq
+    build:
+      context: ./docker/rabbitmq
+      dockerfile: Dockerfile
+    ports:
+      - "5672:5672"   # AMQP protocol
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: station
+      RABBITMQ_DEFAULT_PASS: station
+      RABBITMQ_DEFAULT_VHOST: station
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - station
+
+  # ===========================================
+  # Phase 2.1 - Redis Driver
+  # ===========================================
+  redis:
+    container_name: station_redis
+    image: redis:7.4-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - station
+
+  # ===========================================
+  # Phase 2.2 - AWS SQS/SNS (LocalStack)
+  # ===========================================
+  localstack:
+    container_name: station_localstack
+    image: localstack/localstack:3.0
+    ports:
+      - "4566:4566"   # LocalStack Gateway
+      - "4510-4559:4510-4559" # External services port range
+    environment:
+      - SERVICES=sqs,sns
+      - DEBUG=0
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - ./docker/localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - station
+
+  # ===========================================
+  # Phase 2.3 - Beanstalkd Driver
+  # ===========================================
+  beanstalkd:
+    container_name: station_beanstalkd
+    image: schickling/beanstalkd:latest
+    ports:
+      - "11300:11300"
+    command: -z 65535 -b /var/lib/beanstalkd
+    volumes:
+      - beanstalkd_data:/var/lib/beanstalkd
+    networks:
+      - station
+
+  # Beanstalkd Console (optional, for debugging)
+  beanstalkd-console:
+    container_name: station_beanstalkd_console
+    image: schickling/beanstalkd-console
+    profiles: ["debug"]
+    ports:
+      - "2080:2080"
+    environment:
+      - BEANSTALKD_HOST=beanstalkd
+      - BEANSTALKD_PORT=11300
+    volumes:
+      - ./docker/beanstalkd-console/config.php:/source/config.php:ro
+    depends_on:
+      - beanstalkd
+    networks:
+      - station
+
+  # ===========================================
+  # Phase 2.4 - Apache Kafka Driver
+  # ===========================================
+  zookeeper:
+    container_name: station_zookeeper
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - station
+
+  kafka:
+    container_name: station_kafka
+    image: confluentinc/cp-kafka:7.6.0
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - station
+
+  # Kafka UI (optional, for debugging)
+  kafka-ui:
+    container_name: station_kafka_ui
+    image: provectuslabs/kafka-ui:latest
+    profiles: ["debug"]
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: station
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - station
+
+  # ===========================================
+  # Database (for job history/metrics storage)
+  # ===========================================
+  mysql:
+    container_name: station_mysql
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: station
+      MYSQL_USER: station
+      MYSQL_PASSWORD: station
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - station
+
+networks:
+  station:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+  localstack_data:
+  beanstalkd_data:
+  zookeeper_data:
+  zookeeper_log:
+  kafka_data:
+  mysql_data:
