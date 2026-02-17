@@ -111,7 +111,7 @@ const cancelJob = async () => {
                         v-if="job.status === 'failed'"
                         @click="retryJob"
                         :disabled="retrying"
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
                     >
                         {{ retrying ? 'Retrying...' : 'Retry' }}
                     </button>
@@ -119,7 +119,7 @@ const cancelJob = async () => {
                         v-if="['pending', 'processing'].includes(job.status)"
                         @click="cancelJob"
                         :disabled="cancelling"
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
                     >
                         {{ cancelling ? 'Cancelling...' : 'Cancel' }}
                     </button>
@@ -196,7 +196,7 @@ const cancelJob = async () => {
                                             v-model="newTag"
                                             type="text"
                                             placeholder="Add tag..."
-                                            class="w-24 px-2 py-0.5 text-xs border-border bg-secondary text-foreground rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                            class="w-24 px-2 py-0.5 text-xs border-border bg-secondary text-foreground rounded focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
                                         />
                                         <button
                                             type="submit"

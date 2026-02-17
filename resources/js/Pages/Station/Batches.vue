@@ -140,7 +140,7 @@ const getProgress = (batch) => {
                         <select
                             id="connection"
                             v-model="selectedConnection"
-                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                         >
                             <option value="">All Drivers</option>
                             <option v-for="conn in connections" :key="conn" :value="conn">
@@ -155,7 +155,7 @@ const getProgress = (batch) => {
                         <select
                             id="status"
                             v-model="selectedStatus"
-                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                         >
                             <option value="">All Statuses</option>
                             <option value="pending">Pending</option>

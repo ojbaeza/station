@@ -115,7 +115,7 @@ const retryAll = async () => {
                     <button
                         @click="retryAll"
                         :disabled="retryingAll || !jobs.data?.length"
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
                     >
                         {{ retryingAll ? 'Retrying...' : 'Retry All' }}
                     </button>
@@ -132,7 +132,7 @@ const retryAll = async () => {
                         <select
                             id="connection"
                             v-model="selectedConnection"
-                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                         >
                             <option value="">All Drivers</option>
                             <option v-for="conn in connections" :key="conn" :value="conn">
@@ -147,7 +147,7 @@ const retryAll = async () => {
                         <select
                             id="queue"
                             v-model="selectedQueue"
-                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                         >
                             <option value="">All Queues</option>
                             <option v-for="queue in queues" :key="queue" :value="queue">
@@ -164,7 +164,7 @@ const retryAll = async () => {
                             v-model="selectedTag"
                             list="failed-tag-suggestions"
                             placeholder="Filter by tag..."
-                            class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                            class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                         />
                         <datalist id="failed-tag-suggestions">
                             <option v-for="tag in availableTags" :key="tag" :value="tag" />

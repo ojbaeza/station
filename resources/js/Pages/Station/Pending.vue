@@ -75,7 +75,7 @@ const filterByTag = (tag) => {
                         <select
                             id="connection"
                             v-model="selectedConnection"
-                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                         >
                             <option value="">All Drivers</option>
                             <option v-for="conn in connections" :key="conn" :value="conn">
@@ -90,7 +90,7 @@ const filterByTag = (tag) => {
                         <select
                             id="queue"
                             v-model="selectedQueue"
-                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                         >
                             <option value="">All Queues</option>
                             <option v-for="queue in queues" :key="queue" :value="queue">
@@ -107,7 +107,7 @@ const filterByTag = (tag) => {
                             v-model="selectedTag"
                             list="tag-suggestions"
                             placeholder="Filter by tag..."
-                            class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                            class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                         />
                         <datalist id="tag-suggestions">
                             <option v-for="tag in availableTags" :key="tag" :value="tag" />

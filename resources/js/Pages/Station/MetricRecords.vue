@@ -65,7 +65,7 @@ const formatNumber = (num) => {
                     <select
                         v-if="connections && connections.length > 0"
                         v-model="selectedConnection"
-                        class="block w-full min-w-[200px] pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                        class="block w-full min-w-[200px] pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                     >
                         <option value="">All Connections</option>
                         <option v-for="conn in connections" :key="conn" :value="conn">
@@ -74,7 +74,7 @@ const formatNumber = (num) => {
                     </select>
                     <select
                         v-model="selectedPeriod"
-                        class="block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                        class="block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                     >
                         <option v-for="period in periods" :key="period.value" :value="period.value">
                             {{ period.label }}

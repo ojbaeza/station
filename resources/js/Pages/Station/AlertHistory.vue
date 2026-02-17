@@ -75,7 +75,7 @@ const formatDate = (dateStr) => {
             </div>
 
             <!-- History table -->
-            <div class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+            <div class="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
                 <table class="min-w-full divide-y divide-border">
                     <thead class="bg-muted/50">
                         <tr>

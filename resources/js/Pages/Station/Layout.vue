@@ -198,7 +198,7 @@ const themeIcon = computed(() => {
                 <div class="absolute top-0 right-0 -mr-12 pt-2">
                     <button
                         type="button"
-                        class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none"
+                        class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-hidden"
                         @click="sidebarOpen = false"
                     >
                         <span class="sr-only">Close sidebar</span>
@@ -437,7 +437,7 @@ const themeIcon = computed(() => {
                 <div class="flex items-center gap-2">
                     <button
                         type="button"
-                        class="h-10 w-10 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus:outline-none"
+                        class="h-10 w-10 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus:outline-hidden"
                         @click="sidebarOpen = true"
                     >
                         <span class="sr-only">Open sidebar</span>
@@ -481,7 +481,7 @@ const themeIcon = computed(() => {
                         <span class="h-2.5 w-2.5 rounded-full" :class="autoRefreshEnabled ? 'bg-emerald-500' : 'bg-zinc-500'"></span>
                         Auto-Refresh
                     </button>
-                    <select v-model="refreshIntervalMs" @change="persistRefreshInterval" class="text-sm bg-secondary border-border rounded pl-2 pr-7 py-1 text-muted-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <select v-model="refreshIntervalMs" @change="persistRefreshInterval" class="text-sm bg-secondary border-border rounded pl-2 pr-7 py-1 text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-indigo-500">
                         <option :value="1000">1s</option>
                         <option :value="3000">3s</option>
                         <option :value="5000">5s</option>

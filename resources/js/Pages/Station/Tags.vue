@@ -66,7 +66,7 @@ onUnmounted(() => {
                     <select
                         v-if="connections.length > 0"
                         v-model="selectedConnection"
-                        class="block w-full sm:w-auto min-w-[160px] pl-3 pr-10 py-2 text-sm border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
+                        class="block w-full sm:w-auto min-w-[160px] pl-3 pr-10 py-2 text-sm border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
                     >
                         <option value="">All Connections</option>
                         <option v-for="conn in connections" :key="conn" :value="conn">{{ conn }}</option>
@@ -79,14 +79,14 @@ onUnmounted(() => {
                             v-model="search"
                             type="text"
                             placeholder="Search tags..."
-                            class="w-full sm:w-64 pl-9 pr-3 py-2 text-sm rounded-md border border-border bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                            class="w-full sm:w-64 pl-9 pr-3 py-2 text-sm rounded-md border border-border bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
                         />
                     </div>
                 </div>
             </div>
 
             <!-- Tags list -->
-            <div v-if="tags?.data?.length > 0" class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+            <div v-if="tags?.data?.length > 0" class="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
                 <table class="min-w-full divide-y divide-border">
                     <thead class="bg-secondary/50">
                         <tr>
@@ -120,7 +120,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Empty state -->
-            <div v-else class="bg-card rounded-xl border border-border shadow-sm p-12 text-center">
+            <div v-else class="bg-card rounded-xl border border-border shadow-xs p-12 text-center">
                 <p class="text-sm text-muted-foreground">
                     {{ search ? 'No tags matching "' + search + '".' : 'No tagged jobs found.' }}
                 </p>

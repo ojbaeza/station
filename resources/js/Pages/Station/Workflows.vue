@@ -204,7 +204,7 @@ function cancelWorkflow(id) {
             <label class="block text-sm font-medium text-muted-foreground">Status</label>
             <select
               v-model="selectedStatus"
-              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
@@ -221,14 +221,14 @@ function cancelWorkflow(id) {
               v-model="selectedDefinition"
               type="text"
               placeholder="Filter by definition name..."
-              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             />
           </div>
           <div v-if="connections.length > 0">
             <label class="block text-sm font-medium text-muted-foreground">Connection</label>
             <select
               v-model="selectedConnection"
-              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             >
               <option value="">All Connections</option>
               <option v-for="conn in connections" :key="conn" :value="conn">{{ conn }}</option>

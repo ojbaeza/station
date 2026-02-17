@@ -176,7 +176,7 @@ const truncate = (str, length = 40) => {
                                 type="number"
                                 min="1"
                                 :placeholder="String(threshold)"
-                                class="block w-full pl-3 pr-3 py-2 text-base border-border bg-secondary text-foreground focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
+                                class="block w-full pl-3 pr-3 py-2 text-base border-border bg-secondary text-foreground focus:outline-hidden focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md"
                             />
                             <Button variant="outline" size="sm" @click="applyFilters">
                                 Apply

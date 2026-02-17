@@ -230,7 +230,7 @@ onUnmounted(() => {
     <div class="space-y-6">
         <!-- Launch Workers -->
         <div class="rounded-xl border border-emerald-500/30 bg-card/50 overflow-hidden relative">
-            <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none"></div>
+            <div class="absolute inset-0 bg-linear-to-r from-emerald-500/5 to-transparent pointer-events-none"></div>
             <div class="relative p-5">
                 <div class="flex items-center gap-2 mb-4">
                     <div class="h-7 w-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
@@ -268,7 +268,7 @@ onUnmounted(() => {
                         <div class="flex h-9 items-center px-3 rounded-lg border border-input bg-background focus-within:ring-2 focus-within:ring-emerald-500/50 transition-all">
                             <select
                                 v-model="formConnection"
-                                class="h-full w-full bg-transparent text-sm focus:outline-none cursor-pointer"
+                                class="h-full w-full bg-transparent text-sm focus:outline-hidden cursor-pointer"
                             >
                                 <option v-for="d in driverList" :key="d.value" :value="d.value">{{ d.label }}</option>
                             </select>
@@ -279,7 +279,7 @@ onUnmounted(() => {
                         <input
                             v-model="formQueue"
                             type="text"
-                            class="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                            class="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 transition-all"
                             placeholder="default"
                         />
                     </div>
@@ -316,7 +316,7 @@ onUnmounted(() => {
 
         <!-- Worker Controls -->
         <div class="rounded-xl border border-emerald-500/30 bg-card/50 overflow-hidden relative">
-            <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none"></div>
+            <div class="absolute inset-0 bg-linear-to-r from-emerald-500/5 to-transparent pointer-events-none"></div>
             <div class="relative p-5">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-4">

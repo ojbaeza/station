@@ -455,7 +455,7 @@ const getStatusColor = (status) => {
                         <label class="text-sm font-medium text-muted-foreground">Connection</label>
                         <select
                             v-model="launchConnection"
-                            class="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
+                            class="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
                         >
                             <option v-for="name in connectionNames" :key="name" :value="name">
                                 {{ name }}
@@ -468,7 +468,7 @@ const getStatusColor = (status) => {
                             v-model="launchQueue"
                             type="text"
                             placeholder="default"
-                            class="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                            class="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50"
                         />
                     </div>
                     <div class="flex items-end gap-3">
@@ -484,7 +484,7 @@ const getStatusColor = (status) => {
                                     type="number"
                                     min="1"
                                     max="10"
-                                    class="w-8 border-0 border-x border-input bg-transparent text-sm text-foreground text-center focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    class="w-8 border-0 border-x border-input bg-transparent text-sm text-foreground text-center focus:outline-hidden [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <button
                                     @click="launchWorkers = Math.min(10, launchWorkers + 1)"
@@ -735,7 +735,7 @@ const getStatusColor = (status) => {
                                 <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Driver Stats</h4>
                                 <select
                                     v-model="selectedPeriod"
-                                    class="h-7 rounded-md border border-input bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
+                                    class="h-7 rounded-md border border-input bg-background px-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
                                 >
                                     <option value="5m">Last 5 min</option>
                                     <option value="15m">Last 15 min</option>
