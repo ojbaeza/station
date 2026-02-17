@@ -3,7 +3,7 @@
 [![CI](https://github.com/ojbaeza/station/workflows/CI/badge.svg)](https://github.com/ojbaeza/station/actions)
 [![Coverage](https://codecov.io/gh/ojbaeza/station/branch/main/graph/badge.svg)](https://codecov.io/gh/ojbaeza/station)
 [![Latest Version](https://img.shields.io/packagist/v/ojbaeza/station.svg)](https://packagist.org/packages/ojbaeza/station)
-[![License](https://img.shields.io/packagist/l/ojbaeza/station.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/ojbaeza/station)](LICENSE)
 [![PHP Version](https://img.shields.io/packagist/php-v/ojbaeza/station.svg)](composer.json)
 
 **A Laravel Horizon alternative with multi-driver support and enhanced job recovery.**
@@ -13,6 +13,8 @@ Station replaces Horizon as your queue management and monitoring layer. Your exi
 Station hooks into Laravel's queue event system to transparently track every job, batch, and workflow through a real-time dashboard.
 
 **Resources:** [Contributing](CONTRIBUTING.md) | [Security Policy](SECURITY.md) | [Changelog](CHANGELOG.md) | [Upgrade Guide](UPGRADE.md)
+
+![Dashboard](docs/screenshots/dashboard.png)
 
 ---
 
@@ -76,6 +78,8 @@ Access the dashboard at `/station`.
 
 ## Jobs
 
+![Jobs](docs/screenshots/jobs.png)
+
 Standard Laravel dispatch is tracked automatically — no code changes needed:
 
 ```php
@@ -102,6 +106,8 @@ Station records processing time, memory usage, attempts, wait time, and status f
 ---
 
 ## Batches
+
+![Batches](docs/screenshots/batches.png)
 
 Station wraps Laravel's native `Bus::batch()` with enhanced tracking. Jobs must use the `Batchable` trait:
 
@@ -152,6 +158,8 @@ For details on the overlay table strategy and atomic counter tracking, see [Batc
 ---
 
 ## Workflows
+
+![Workflows](docs/screenshots/workflows.png)
 
 ### Simple Workflows
 
@@ -206,24 +214,26 @@ Workflow instances are stored in the database with full state tracking, and can 
 
 For details on execution model, branching, and context propagation, see [Workflows Architecture](docs/architecture.md#workflows).
 
+![Workflow Definitions](docs/screenshots/workflow-definitions.png)
+
 ### Workflows vs Laravel Bus
 
 Station's workflow engine provides DAG orchestration beyond what Laravel's built-in `Bus::batch()` and `Bus::chain()` can express:
 
-| Feature | Station Workflows | Bus::batch() | Bus::chain() |
-|---------|:-:|:-:|:-:|
-| DAG dependencies | Yes | No | No (linear only) |
-| Parallel execution | Yes (async) | Yes | No |
-| Conditional steps | Yes (runtime) | No | No |
-| Dynamic branching | Yes | No | No |
-| Pause / Resume | Yes | No | No |
-| Context passing between steps | Yes | No | No |
-| Per-step status tracking | Yes | Batch-level only | No |
-| Per-step retry / timeout | Yes (async) | Per-job | Per-job |
-| Progress tracking | Yes (step %) | Yes (job count %) | No |
-| Cancellation | Yes | Yes | Stops chain |
-| Stuck step recovery | Yes | No | No |
-| Persisted state | Yes (DB) | Yes (job_batches) | No |
+| Feature                       | Station Workflows |   Bus::batch()    |   Bus::chain()   |
+| ----------------------------- | :---------------: | :---------------: | :--------------: |
+| DAG dependencies              |        Yes        |        No         | No (linear only) |
+| Parallel execution            |    Yes (async)    |        Yes        |        No        |
+| Conditional steps             |   Yes (runtime)   |        No         |        No        |
+| Dynamic branching             |        Yes        |        No         |        No        |
+| Pause / Resume                |        Yes        |        No         |        No        |
+| Context passing between steps |        Yes        |        No         |        No        |
+| Per-step status tracking      |        Yes        | Batch-level only  |        No        |
+| Per-step retry / timeout      |    Yes (async)    |      Per-job      |     Per-job      |
+| Progress tracking             |   Yes (step %)    | Yes (job count %) |        No        |
+| Cancellation                  |        Yes        |        Yes        |   Stops chain    |
+| Stuck step recovery           |        Yes        |        No         |        No        |
+| Persisted state               |     Yes (DB)      | Yes (job_batches) |        No        |
 
 Station workflows support both synchronous (`Workflow::run()`) and asynchronous (`Workflow::runAsync()`) execution. In async mode, each step is dispatched as a standard `ShouldQueue` job processed by Laravel workers, enabling true parallel execution across multiple workers. The orchestration layer (dependency resolution, conditional evaluation, context propagation) is where Station adds value on top of Laravel's primitives.
 
@@ -286,27 +296,29 @@ For details on scoring, strategies, and health checks, see [Recovery System](doc
 
 ## Artisan Commands
 
-| Command | Description |
-|---------|-------------|
-| `station:work` | Start the supervisor (manages multiple workers) |
-| `station:status` | Show queue and worker status |
-| `station:pause {queue}` | Pause processing for a specific queue |
-| `station:resume {queue}` | Resume a paused queue |
-| `station:terminate` | Gracefully stop all workers |
-| `station:recover` | Detect and recover stuck jobs (`--strategy`, `--threshold`, `--dry-run`, `--workflows`) |
-| `station:retry {id}` | Retry a failed job (`--all` for all) |
-| `station:failed` | List failed jobs |
-| `station:flush` | Delete all failed jobs |
-| `station:prune` | Clean up old data |
-| `station:health` | Run health checks |
-| `station:install` | Install Station |
-| `station:publish-supervisor` | Generate a Supervisor config file (`--workers`, `--user`, `--path`) |
+| Command                      | Description                                                                             |
+| ---------------------------- | --------------------------------------------------------------------------------------- |
+| `station:work`               | Start the supervisor (manages multiple workers)                                         |
+| `station:status`             | Show queue and worker status                                                            |
+| `station:pause {queue}`      | Pause processing for a specific queue                                                   |
+| `station:resume {queue}`     | Resume a paused queue                                                                   |
+| `station:terminate`          | Gracefully stop all workers                                                             |
+| `station:recover`            | Detect and recover stuck jobs (`--strategy`, `--threshold`, `--dry-run`, `--workflows`) |
+| `station:retry {id}`         | Retry a failed job (`--all` for all)                                                    |
+| `station:failed`             | List failed jobs                                                                        |
+| `station:flush`              | Delete all failed jobs                                                                  |
+| `station:prune`              | Clean up old data                                                                       |
+| `station:health`             | Run health checks                                                                       |
+| `station:install`            | Install Station                                                                         |
+| `station:publish-supervisor` | Generate a Supervisor config file (`--workers`, `--user`, `--path`)                     |
 
 ---
 
 ## Dashboard
 
 Real-time monitoring UI at `/station` with auto-refresh every 3 seconds:
+
+![Connections](docs/screenshots/connections.png)
 
 - **Overview** — Job throughput, failure rate, average processing time, active workers
 - **Jobs** — Paginated list with status/queue/class filters, retry and delete actions
@@ -315,6 +327,8 @@ Real-time monitoring UI at `/station` with auto-refresh every 3 seconds:
 - **Workflows** — Definitions, running instances, step-by-step progress
 - **Monitoring** — Queue depths, worker counts, throughput charts
 - **Metrics** — Historical data with time range selection
+
+![Metrics](docs/screenshots/metrics.png)
 
 ### Authorization
 
