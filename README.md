@@ -16,6 +16,8 @@ Station hooks into Laravel's queue event system to transparently track every job
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
+![Dashboard Light](docs/screenshots/dashboard-light.png)
+
 ---
 
 ## What Station Provides
