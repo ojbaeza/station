@@ -50,6 +50,8 @@ tags:
     description: Stuck job detection and recovery
   - name: Workflows
     description: Workflow management
+  - name: Alerts
+    description: Alert channel, rule, and history management
 
 paths:
   # ── Dashboard ──────────────────────────────────────────────────
@@ -1091,6 +1093,291 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
+  # ── Prometheus ────────────────────────────────────────────────
+  /metrics/prometheus:
+    get:
+      tags: [Metrics]
+      summary: Export metrics in Prometheus format
+      operationId: getPrometheusMetrics
+      responses:
+        '200':
+          description: Prometheus-format metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+        '501':
+          description: Prometheus export requires the internal meter driver
+
+  # ── Driver Time-Series (web route only) ─────────────────────
+  /metrics/driver-time-series:
+    get:
+      tags: [Metrics]
+      summary: Per-driver time-series metrics (dashboard web route only)
+      operationId: getDriverTimeSeries
+      parameters:
+        - name: connection
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Queue connection name
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            default: '1h'
+          description: Time period (e.g., 1h, 6h, 24h)
+      responses:
+        '200':
+          description: Time-series data points for the specified driver
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Connection parameter is required
+
+  # ── Tags ─────────────────────────────────────────────────────
+  /tags:
+    get:
+      tags: [Jobs]
+      summary: List all tags
+      operationId: listTags
+      responses:
+        '200':
+          description: List of tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /jobs/{id}/tags:
+    post:
+      tags: [Jobs]
+      summary: Add tag to a job
+      operationId: addJobTag
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag:
+                  type: string
+              required: [tag]
+      responses:
+        '200':
+          description: Tag added
+
+  /jobs/{id}/tags/{tag}:
+    delete:
+      tags: [Jobs]
+      summary: Remove tag from a job
+      operationId: removeJobTag
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+        - name: tag
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tag removed
+
+  # ── Queue Connections ────────────────────────────────────────
+  /queues/connections:
+    get:
+      tags: [Queues]
+      summary: List queue connections
+      operationId: listQueueConnections
+      responses:
+        '200':
+          description: Queue connections list
+
+  # ── Workers Dashboard Status ─────────────────────────────────
+  /workers/dashboard-status:
+    get:
+      tags: [Workers]
+      summary: Get worker status for dashboard
+      operationId: getWorkerDashboardStatus
+      responses:
+        '200':
+          description: Worker dashboard status
+
+  # ── Alerts ───────────────────────────────────────────────────
+  /alerts/channels:
+    get:
+      tags: [Alerts]
+      summary: List alert channels
+      operationId: listAlertChannels
+      responses:
+        '200':
+          description: List of alert channels
+    post:
+      tags: [Alerts]
+      summary: Create alert channel
+      operationId: createAlertChannel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertChannelInput'
+      responses:
+        '201':
+          description: Channel created
+
+  /alerts/channels/{id}:
+    put:
+      tags: [Alerts]
+      summary: Update alert channel
+      operationId: updateAlertChannel
+      parameters:
+        - $ref: '#/components/parameters/AlertChannelId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertChannelInput'
+      responses:
+        '200':
+          description: Channel updated
+    delete:
+      tags: [Alerts]
+      summary: Delete alert channel
+      operationId: deleteAlertChannel
+      parameters:
+        - $ref: '#/components/parameters/AlertChannelId'
+      responses:
+        '200':
+          description: Channel deleted
+
+  /alerts/channels/{id}/test:
+    post:
+      tags: [Alerts]
+      summary: Test alert channel
+      operationId: testAlertChannel
+      parameters:
+        - $ref: '#/components/parameters/AlertChannelId'
+      responses:
+        '200':
+          description: Test notification sent
+
+  /alerts/rules:
+    get:
+      tags: [Alerts]
+      summary: List alert rules
+      operationId: listAlertRules
+      responses:
+        '200':
+          description: List of alert rules
+    post:
+      tags: [Alerts]
+      summary: Create alert rule
+      operationId: createAlertRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertRuleInput'
+      responses:
+        '201':
+          description: Rule created
+
+  /alerts/rules/{id}:
+    get:
+      tags: [Alerts]
+      summary: Get alert rule details
+      operationId: getAlertRule
+      parameters:
+        - $ref: '#/components/parameters/AlertRuleId'
+      responses:
+        '200':
+          description: Alert rule details
+    put:
+      tags: [Alerts]
+      summary: Update alert rule
+      operationId: updateAlertRule
+      parameters:
+        - $ref: '#/components/parameters/AlertRuleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertRuleInput'
+      responses:
+        '200':
+          description: Rule updated
+    delete:
+      tags: [Alerts]
+      summary: Delete alert rule
+      operationId: deleteAlertRule
+      parameters:
+        - $ref: '#/components/parameters/AlertRuleId'
+      responses:
+        '200':
+          description: Rule deleted
+
+  /alerts/rules/{id}/toggle:
+    post:
+      tags: [Alerts]
+      summary: Toggle alert rule enabled/disabled
+      operationId: toggleAlertRule
+      parameters:
+        - $ref: '#/components/parameters/AlertRuleId'
+      responses:
+        '200':
+          description: Rule toggled
+
+  /alerts/rules/{id}/test:
+    post:
+      tags: [Alerts]
+      summary: Test alert rule
+      operationId: testAlertRule
+      parameters:
+        - $ref: '#/components/parameters/AlertRuleId'
+      responses:
+        '200':
+          description: Test alert fired
+
+  /alerts/history:
+    get:
+      tags: [Alerts]
+      summary: Get alert history
+      operationId: getAlertHistory
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated alert history
+
+  /alerts/history/{id}/resolve:
+    post:
+      tags: [Alerts]
+      summary: Resolve an alert
+      operationId: resolveAlert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Alert resolved
+
 components:
   parameters:
     JobId:
@@ -1144,6 +1431,22 @@ components:
         maximum: 100
         default: 25
       description: Items per page (max 100)
+
+    AlertChannelId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Alert channel ID
+
+    AlertRuleId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Alert rule ID
 
   schemas:
     # ── Dashboard ──────────────────────────────────────────────
@@ -1715,6 +2018,44 @@ components:
             type: array
             items:
               type: string
+
+    AlertChannelInput:
+      type: object
+      required: [name, type, config]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [slack, email, log, discord, teams, google_chat, webhook]
+        enabled:
+          type: boolean
+          default: true
+        config:
+          type: object
+
+    AlertRuleInput:
+      type: object
+      required: [name, type, condition]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [high_failure_rate, queue_backup, stuck_jobs, worker_down]
+        enabled:
+          type: boolean
+          default: true
+        condition:
+          type: object
+        window:
+          type: integer
+        cooldown:
+          type: integer
+        channel_ids:
+          type: array
+          items:
+            type: string
 
   responses:
     NotFound:

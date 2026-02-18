@@ -455,6 +455,7 @@ namespace Station\Tests\Unit\Core {
             // Set current queues and options (normally set by start())
             $this->setPrivateProperty($supervisor, 'currentQueues', ['emails', 'notifications']);
             $this->setPrivateProperty($supervisor, 'currentOptions', ['processes' => 3]);
+            $this->setPrivateProperty($supervisor, 'targetProcesses', 3);
 
             // Expect 3 WorkerStarted events (one per fork)
             $this->events->shouldReceive('dispatch')
@@ -477,6 +478,7 @@ namespace Station\Tests\Unit\Core {
 
             $this->setPrivateProperty($supervisor, 'currentQueues', ['default']);
             $this->setPrivateProperty($supervisor, 'currentOptions', ['processes' => 3]);
+            $this->setPrivateProperty($supervisor, 'targetProcesses', 3);
 
             // Already have 2 workers
             $this->injectWorkerPids($supervisor, [6001, 6002]);
@@ -501,6 +503,7 @@ namespace Station\Tests\Unit\Core {
 
             $this->setPrivateProperty($supervisor, 'currentQueues', ['default']);
             $this->setPrivateProperty($supervisor, 'currentOptions', ['processes' => 2]);
+            $this->setPrivateProperty($supervisor, 'targetProcesses', 2);
 
             $this->injectWorkerPids($supervisor, [7001, 7002]);
 
@@ -522,6 +525,7 @@ namespace Station\Tests\Unit\Core {
 
             $this->setPrivateProperty($supervisor, 'currentQueues', ['default']);
             $this->setPrivateProperty($supervisor, 'currentOptions', ['processes' => 5]);
+            $this->setPrivateProperty($supervisor, 'targetProcesses', 5);
 
             $this->events->shouldReceive('dispatch')
                 ->times(5)
@@ -727,6 +731,7 @@ namespace Station\Tests\Unit\Core {
 
             $this->setPrivateProperty($supervisor, 'currentQueues', ['default']);
             $this->setPrivateProperty($supervisor, 'currentOptions', ['processes' => 2]);
+            $this->setPrivateProperty($supervisor, 'targetProcesses', 2);
 
             // Start with 2 workers
             $this->injectWorkerPids($supervisor, [19001, 19002]);
@@ -759,6 +764,7 @@ namespace Station\Tests\Unit\Core {
 
             $this->setPrivateProperty($supervisor, 'currentQueues', ['default']);
             $this->setPrivateProperty($supervisor, 'currentOptions', ['processes' => 2]);
+            $this->setPrivateProperty($supervisor, 'targetProcesses', 2);
 
             $this->injectWorkerPids($supervisor, [20001, 20002]);
             PcntlTestState::$waitpidResults[20001] = 20001;
@@ -846,6 +852,7 @@ namespace Station\Tests\Unit\Core {
 
             $this->setPrivateProperty($supervisor, 'currentQueues', ['default']);
             $this->setPrivateProperty($supervisor, 'currentOptions', ['processes' => 3]);
+            $this->setPrivateProperty($supervisor, 'targetProcesses', 3);
 
             // Start with 3 workers
             $this->injectWorkerPids($supervisor, [20001, 20002, 20003]);

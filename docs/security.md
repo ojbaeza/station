@@ -214,6 +214,16 @@ Each rule defines a condition, monitoring window, notification channels, and coo
 ],
 ```
 
+**Artisan command:**
+
+```bash
+# Evaluate all alert rules and send notifications
+php artisan station:alerts:check
+
+# Seed default channels and rules from config, then evaluate
+php artisan station:alerts:check --seed
+```
+
 Maintenance mode can also trigger notifications:
 
 ```php
@@ -249,11 +259,13 @@ stateDiagram-v2
     'services' => [
         'rabbitmq' => [
             'failure_threshold' => 5,    // Failures before opening
+            'success_threshold' => 3,    // Successes in half-open before closing
             'recovery_timeout' => 30,    // Seconds before half-open
             'timeout' => 5,
         ],
         'database' => [
             'failure_threshold' => 3,
+            'success_threshold' => 2,
             'recovery_timeout' => 15,
         ],
     ],

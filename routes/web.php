@@ -127,6 +127,7 @@ Route::middleware($middleware)
             Route::get('/metrics/time-series', [MetricsController::class, 'metricsTimeSeries'])->name('api.metrics.time-series');
             Route::get('/metrics/driver-info', [MetricsController::class, 'metricsDriverInfo'])->name('api.metrics.driver-info');
             Route::get('/metrics/driver-time-series', [MetricsController::class, 'driverTimeSeries'])->name('api.metrics.driver-time-series');
+            Route::get('/metrics/prometheus', [MetricsController::class, 'prometheus'])->name('api.metrics.prometheus');
 
             // Tags
             Route::get('/tags', [JobController::class, 'tags'])->name('api.tags');

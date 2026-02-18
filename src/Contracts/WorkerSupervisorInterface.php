@@ -48,4 +48,9 @@ interface WorkerSupervisorInterface
      * Get the number of active workers.
      */
     public function getWorkerCount(): int;
+
+    /**
+     * Scale workers to the given count (bounded by config min/max).
+     */
+    public function scaleWorkers(int $count): void;
 }

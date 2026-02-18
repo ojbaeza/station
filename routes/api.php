@@ -95,6 +95,7 @@ Route::middleware($middleware)
             Route::get('/', [MetricsController::class, 'metrics']);
             Route::get('/time-series', [MetricsController::class, 'metricsTimeSeries']);
             Route::get('/driver-info', [MetricsController::class, 'metricsDriverInfo']);
+            Route::get('/prometheus', [MetricsController::class, 'prometheus']);
         });
 
         // Stuck jobs

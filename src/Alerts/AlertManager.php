@@ -234,7 +234,19 @@ final class AlertManager
             $channelNameToId[$name] = $id;
         }
 
-        // Seed rules (resolve channel names to IDs)
+        // Build a type shortcode → first matching channel ID map for shortcode resolution
+        $channelTypeToId = [];
+
+        foreach ($channelConfigs as $channelConfig) {
+            $typeName = $channelConfig['type'] ?? '';
+            $name = $channelConfig['name'] ?? '';
+
+            if ($typeName !== '' && $name !== '' && !isset($channelTypeToId[$typeName]) && isset($channelNameToId[$name])) {
+                $channelTypeToId[$typeName] = $channelNameToId[$name];
+            }
+        }
+
+        // Seed rules (resolve channel names or type shortcodes to IDs)
         $rules = $this->config['rules'] ?? [];
 
         foreach ($rules as $key => $ruleConfig) {
@@ -244,13 +256,15 @@ final class AlertManager
                 continue;
             }
 
-            // Resolve channel names to IDs
+            // Resolve channel names or shortcodes to IDs
             $ruleChannelNames = $ruleConfig['channels'] ?? [];
             $resolvedIds = [];
 
             foreach ($ruleChannelNames as $channelName) {
                 if (isset($channelNameToId[$channelName])) {
                     $resolvedIds[] = $channelNameToId[$channelName];
+                } elseif (isset($channelTypeToId[$channelName])) {
+                    $resolvedIds[] = $channelTypeToId[$channelName];
                 }
             }
 

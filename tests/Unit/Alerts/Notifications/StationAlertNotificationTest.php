@@ -10,6 +10,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Station\Alerts\Channels\StationDiscordChannel;
+use Station\Alerts\Channels\StationEmailChannel;
 use Station\Alerts\Channels\StationGoogleChatChannel;
 use Station\Alerts\Channels\StationLogChannel;
 use Station\Alerts\Channels\StationSlackChannel;
@@ -53,11 +54,11 @@ class StationAlertNotificationTest extends TestCase
 
     // ---- via() tests ----
 
-    public function testViaReturnsMailForEmail(): void
+    public function testViaReturnsEmailChannelClassForEmail(): void
     {
         $notification = $this->makeNotification(AlertChannelType::Email);
 
-        $this->assertSame(['mail'], $notification->via(null));
+        $this->assertSame([StationEmailChannel::class], $notification->via(null));
     }
 
     public function testViaReturnsSlackChannelClassForSlack(): void

@@ -12,6 +12,7 @@ use Station\Events\SupervisorStarted;
 use Station\Events\SupervisorStopped;
 use Station\Events\WorkerStarted;
 use Station\Events\WorkerStopped;
+use Station\Scaling\AutoScaler;
 use Throwable;
 
 final class WorkerSupervisor implements WorkerSupervisorInterface
@@ -34,6 +35,12 @@ final class WorkerSupervisor implements WorkerSupervisorInterface
 
     /** @var array<string, mixed> Current worker options */
     private array $currentOptions = [];
+
+    private int $targetProcesses = 1;
+
+    private ?AutoScaler $autoScaler = null;
+
+    private int $loopIteration = 0;
 
     public function __construct(
         private readonly Dispatcher $events,
@@ -75,6 +82,7 @@ final class WorkerSupervisor implements WorkerSupervisorInterface
         $this->currentOptions = $options;
 
         $processes = $options['processes'] ?? $this->config['supervisors']['default']['processes'] ?? 1;
+        $this->targetProcesses = $processes;
 
         $this->events->dispatch(new SupervisorStarted(
             $this->id,
@@ -160,12 +168,38 @@ final class WorkerSupervisor implements WorkerSupervisorInterface
     }
 
     /**
+     * Scale workers to the given count (bounded by config min/max).
+     */
+    public function scaleWorkers(int $count): void
+    {
+        $min = (int) ($this->config['scaling']['policies']['default']['min_workers'] ?? 1);
+        $max = (int) ($this->config['scaling']['policies']['default']['max_workers'] ?? 10);
+
+        $this->targetProcesses = max($min, min($max, $count));
+    }
+
+    /**
+     * Set the auto-scaler for dynamic worker scaling.
+     */
+    public function setAutoScaler(AutoScaler $autoScaler): void
+    {
+        $this->autoScaler = $autoScaler;
+    }
+
+    /**
      * Main supervisor loop.
      */
     private function loop(): void
     {
+        $this->loopIteration++;
+
         // Reap dead workers
         $this->reapWorkers();
+
+        // Evaluate auto-scaling every 10 iterations (~1 second)
+        if ($this->autoScaler !== null && $this->loopIteration % 10 === 0) {
+            $this->evaluateScaling();
+        }
 
         // Check if we need to restart any workers
         $this->maintainWorkerPool();
@@ -258,7 +292,7 @@ final class WorkerSupervisor implements WorkerSupervisorInterface
     }
 
     /**
-     * Maintain the worker pool (restart dead workers).
+     * Maintain the worker pool (restart dead workers, scale up/down).
      */
     private function maintainWorkerPool(): void
     {
@@ -266,11 +300,17 @@ final class WorkerSupervisor implements WorkerSupervisorInterface
             return;
         }
 
-        $desiredProcesses = $this->currentOptions['processes']
-            ?? $this->config['supervisors']['default']['processes']
-            ?? 1;
+        // Scale down: gracefully terminate excess workers (youngest first)
+        while (\count($this->workerPids) > $this->targetProcesses) {
+            $pid = array_pop($this->workerPids);
 
-        while (\count($this->workerPids) < $desiredProcesses) {
+            if ($pid !== null && posix_kill($pid, 0)) {
+                posix_kill($pid, SIGTERM);
+            }
+        }
+
+        // Scale up: fork new workers
+        while (\count($this->workerPids) < $this->targetProcesses) {
             $this->startWorker($this->currentQueues, $this->currentOptions);
         }
     }
@@ -305,6 +345,24 @@ final class WorkerSupervisor implements WorkerSupervisorInterface
 
         // Final reap
         $this->reapWorkers();
+    }
+
+    /**
+     * Evaluate auto-scaling decisions and adjust target processes.
+     */
+    private function evaluateScaling(): void
+    {
+        if ($this->autoScaler === null || !$this->autoScaler->isEnabled()) {
+            return;
+        }
+
+        $results = $this->autoScaler->scale();
+
+        foreach ($results as $result) {
+            if ($result['action'] !== '') {
+                $this->scaleWorkers($result['to']);
+            }
+        }
     }
 
     /**

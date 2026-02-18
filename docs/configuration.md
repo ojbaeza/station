@@ -19,8 +19,9 @@ The full `config/station.php` is published via `php artisan vendor:publish`. Bel
 | **Storage** | `storage` | Storage driver (database/redis), table prefix, retention periods |
 | **Dashboard** | `dashboard` | Path, domain, middleware, theme, refresh interval, driver URLs, realtime config |
 | **API** | `api` | API prefix, auth method, token, rate limit |
+| **Process Management** | `process_management` | Enable start/stop workers from dashboard (requires POSIX) |
 | **Monitoring** | `monitoring` | Metrics collection toggle and sample rate |
-| **Alerts** | `alerts` | Alert channels (Slack/email/log) and rules |
+| **Alerts** | `alerts` | Alert channels (Slack, Discord, Teams, Google Chat, email, webhook, log) and rules |
 | **Recovery** | `recovery` | Stuck job timeout, health check interval, strategies, heartbeat |
 | **Stuck Detection** | `stuck_detection` | Scoring weights, thresholds, confirmation checks |
 | **Health** | `health` | Health check endpoint, per-service checks and thresholds |

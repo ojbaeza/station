@@ -28,8 +28,8 @@ Station hooks into Laravel's queue event system to transparently track every job
 - **Workflow engine** — Multi-step DAG workflows with conditions, branching, and pause/resume
 - **Job recovery** — Checkpointing for long-running jobs, stuck job detection, automatic recovery
 - **Real-time dashboard** — Inertia.js + Vue 3 UI with 3-second auto-refresh
-- **Built-in observability** — Prometheus metrics, health checks, multi-channel alerting (Slack, Discord, Teams, webhooks)
-- **Alerting** — Configurable alert rules with multi-channel notifications (Slack, Discord, Teams, webhooks, log)
+- **Built-in observability** — Prometheus metrics, health checks, multi-channel alerting (Slack, Discord, Teams, email, webhooks)
+- **Alerting** — Configurable alert rules with multi-channel notifications (Slack, Discord, Teams, email, webhooks, log)
 - **Security** — Job encryption, payload masking, audit logging, gate-based authorization
 
 For a detailed comparison with Horizon, see [Station vs Horizon](docs/architecture.md#station-vs-horizon).
@@ -313,6 +313,7 @@ For details on scoring, strategies, and health checks, see [Recovery System](doc
 | `station:health`             | Run health checks                                                                       |
 | `station:install`            | Install Station                                                                         |
 | `station:publish-supervisor` | Generate a Supervisor config file (`--workers`, `--user`, `--path`)                     |
+| `station:alerts:check`       | Evaluate alert rules and send notifications (`--seed` to seed from config)              |
 
 ---
 

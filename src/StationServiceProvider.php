@@ -287,10 +287,18 @@ class StationServiceProvider extends ServiceProvider
             $app['config']['station.monitoring'],
         ));
 
-        $this->app->singleton(WorkerSupervisor::class, static fn(Application $app): WorkerSupervisor => new WorkerSupervisor(
-            $app['events'],
-            $app['config']['station'],
-        ));
+        $this->app->singleton(WorkerSupervisor::class, static function (Application $app): WorkerSupervisor {
+            $supervisor = new WorkerSupervisor(
+                $app['events'],
+                $app['config']['station'],
+            );
+
+            if ($app['config']['station.scaling.enabled'] ?? false) {
+                $supervisor->setAutoScaler($app->make(AutoScaler::class));
+            }
+
+            return $supervisor;
+        });
 
         $this->app->singleton(StationQueueManager::class, static fn(Application $app): StationQueueManager => new StationQueueManager($app['queue']));
 

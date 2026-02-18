@@ -411,7 +411,7 @@ The `syncFromLaravel()` method exists for reconciliation, but real-time tracking
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending: Batch::create()
+    [*] --> pending: Batch create()
     pending --> processing: First job starts
     processing --> completed: All jobs done, failures ≤ allowed
     processing --> failed: Failures > allowed_failures
@@ -590,7 +590,7 @@ $instance = Workflow::runAsync('payment-processing', [
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending: Workflow::run()
+    [*] --> pending: Workflow run()
     pending --> running: Execution starts
     running --> completed: All steps done
     running --> failed: Step fails (max retries exceeded)
@@ -1132,7 +1132,13 @@ station_workers_active 8
 | Workflow Definitions | `GET /station/workflows/definitions` | Reusable workflow definitions |
 | Workflow Detail | `GET /station/workflows/{id}` | Step-by-step progress, context, results |
 | Metrics | `GET /station/metrics` | Aggregate metrics with time range selection |
+| Queue Metrics | `GET /station/metrics/queues` | Per-queue metric breakdowns |
 | Metric Records | `GET /station/metrics/records` | Raw metric data records |
+| Alerts | `GET /station/alerts` | Alert history with severity and status |
+| Alert Rules | `GET /station/alerts/rules` | Alert rule management |
+| Alert Channels | `GET /station/alerts/channels` | Notification channel configuration |
+| Tags | `GET /station/tags` | Tag-based job browser |
+| Audit Log | `GET /station/audit-log` | Admin action history |
 | Settings | `GET /station/settings` | Configuration viewer |
 
 ### API Endpoints
@@ -1200,6 +1206,8 @@ All paths below are relative to the API prefix (default: `/api/station`, configu
 - `GET /metrics` — Metrics summary
 - `GET /metrics/time-series` — Time-series metrics data
 - `GET /metrics/driver-info` — Per-driver metric info
+- `GET /metrics/prometheus` — Prometheus-format metrics export
+- `GET /metrics/driver-time-series?connection={name}&period={1h}` — Per-driver time-series metrics (web route only)
 - `GET /monitoring` — Monitoring overview
 - `GET /drivers` — Driver connectivity and info
 
@@ -1213,6 +1221,22 @@ All paths below are relative to the API prefix (default: `/api/station`, configu
 - `POST /stuck/{id}/recover` — Recover a specific stuck job
 - `POST /stuck/bulk/recover` — Bulk recover stuck jobs
 - `POST /recover` — Trigger stuck job recovery
+
+**Alerts:**
+- `GET /alerts/channels` — List alert channels
+- `POST /alerts/channels` — Create alert channel
+- `PUT /alerts/channels/{id}` — Update alert channel
+- `DELETE /alerts/channels/{id}` — Delete alert channel
+- `POST /alerts/channels/{id}/test` — Test alert channel
+- `GET /alerts/rules` — List alert rules
+- `GET /alerts/rules/{id}` — Get alert rule details
+- `POST /alerts/rules` — Create alert rule
+- `PUT /alerts/rules/{id}` — Update alert rule
+- `DELETE /alerts/rules/{id}` — Delete alert rule
+- `POST /alerts/rules/{id}/toggle` — Toggle alert rule enabled/disabled
+- `POST /alerts/rules/{id}/test` — Test alert rule
+- `GET /alerts/history` — Alert history
+- `POST /alerts/history/{id}/resolve` — Resolve an alert
 
 ### Real-Time Refresh
 
@@ -1239,6 +1263,9 @@ Station creates these tables (all prefixed with `station_`):
 | `station_workflows` | Workflow instance state, progress, connection, and definition step snapshots |
 | `station_kafka_delayed_jobs` | Kafka-specific delayed job storage |
 | `station_driver_snapshots` | Per-driver metric snapshots for connectivity and performance |
+| `station_alert_channels` | Alert notification channel configuration |
+| `station_alert_rules` | Alert rule definitions and thresholds |
+| `station_alert_history` | Triggered alert history with severity and resolution status |
 
 Key indexes are on `(queue, status)`, `(status, created_at)`, `(batch_id)`, and `(worker_id)` for efficient dashboard queries.
 
@@ -1417,9 +1444,27 @@ Station includes an OpenTelemetry-compatible telemetry system for distributed tr
 ```php
 'telemetry' => [
     'enabled' => env('STATION_TELEMETRY_ENABLED', false),
-    'driver' => env('STATION_TELEMETRY_DRIVER', 'internal'),  // 'internal' or 'opentelemetry'
     'service_name' => env('STATION_TELEMETRY_SERVICE', 'station'),
-    'endpoint' => env('STATION_TELEMETRY_ENDPOINT'),
+
+    'tracing' => [
+        'enabled' => true,
+        'driver' => env('STATION_TRACING_DRIVER', 'internal'), // 'internal', 'opentelemetry'
+        'sample_rate' => (float) env('STATION_TRACING_SAMPLE_RATE', 1.0),
+        'propagation' => 'w3c', // 'w3c', 'b3', 'jaeger'
+    ],
+
+    'metrics' => [
+        'enabled' => true,
+        'driver' => env('STATION_METRICS_DRIVER', 'internal'), // 'internal', 'opentelemetry'
+        'export_interval' => 60,
+        'prometheus_endpoint' => env('STATION_PROMETHEUS_ENDPOINT', '/station/metrics'),
+    ],
+
+    'exporters' => [
+        'otlp' => ['endpoint' => env('OTEL_EXPORTER_OTLP_ENDPOINT')],
+        'jaeger' => ['endpoint' => env('JAEGER_ENDPOINT')],
+        'zipkin' => ['endpoint' => env('ZIPKIN_ENDPOINT')],
+    ],
 ],
 ```
 
@@ -1468,13 +1513,12 @@ Station supports automatic worker scaling based on queue metrics.
 
 ### Scaling Strategies
 
-| Strategy | Enum Value | Description |
+| Strategy | Value | Description |
 |---|---|---|
-| Queue Size | `queue_size` | Scale based on pending job count |
+| Queue Size | `queue_size` | Scale based on pending job count (jobs per worker) |
+| Throughput | `throughput` | Scale based on target throughput (jobs per minute) |
 | Wait Time | `wait_time` | Scale based on average job wait time |
-| CPU Usage | `cpu` | Scale based on worker CPU utilization |
-| Memory Usage | `memory` | Scale based on worker memory utilization |
-| Custom | `custom` | User-defined scaling logic |
+| Combined | `combined` | Weighted combination of queue_size, throughput, and wait_time |
 
 ### Scaling Policy Builder
 
@@ -1508,14 +1552,24 @@ $policy = (new ScalingPolicyBuilder('time-based'))
 ```php
 'scaling' => [
     'enabled' => env('STATION_SCALING_ENABLED', false),
-    'strategy' => env('STATION_SCALING_STRATEGY', 'queue_size'),
-    'min_workers' => (int) env('STATION_SCALING_MIN', 1),
-    'max_workers' => (int) env('STATION_SCALING_MAX', 10),
-    'cooldown' => 60,
-    'thresholds' => [
-        'scale_up' => ['queue_size' => 1000, 'wait_time' => 30],
-        'scale_down' => ['queue_size' => 100, 'wait_time' => 5],
+
+    'policies' => [
+        'default' => [
+            'min_workers' => 1,
+            'max_workers' => 10,
+            'cooldown' => 60,
+            'scale_up_threshold' => 0.8,
+            'scale_down_threshold' => 0.2,
+        ],
     ],
+
+    'strategies' => [
+        'queue_size' => ['enabled' => true, 'high_watermark' => 1000, 'low_watermark' => 100],
+        'throughput' => ['enabled' => false, 'target_jobs_per_minute' => 100],
+        'wait_time' => ['enabled' => false, 'max_wait_seconds' => 30],
+    ],
+
+    'metrics_window' => 300,
 ],
 ```
 
@@ -1534,6 +1588,7 @@ Station fires events for worker and supervisor lifecycle changes, plus scaling a
 | `SupervisorStopped` | `supervisorId`, `name`, `reason`, `jobsProcessed` | Supervisor stops |
 | `WorkersScaledUp` | `queue`, `previousCount`, `newCount` | Auto-scaler adds workers |
 | `WorkersScaledDown` | `queue`, `previousCount`, `newCount` | Auto-scaler removes workers |
+| `AlertTriggered` | `alert`, `rule`, `channel`, `severity` | Alert rule triggers a notification |
 
 `WorkersScaledUp` provides `getAddedCount()` and `WorkersScaledDown` provides `getRemovedCount()` convenience methods.
 
@@ -1601,9 +1656,9 @@ Horizon requires third-party integrations for Prometheus metrics, health checks,
 
 ### What Horizon Can Do That Station Cannot
 
-**1. Auto-Scaling Based on Queue Load**
+**1. Redis-Native Auto-Balancing**
 
-Horizon's auto-balancer dynamically adjusts worker counts per queue using Redis Lua scripts. Station has scaling configuration but relies on the supervisor's fixed process pool. Auto-scaling is planned for a future release.
+Horizon's auto-balancer dynamically adjusts worker counts per queue using Redis Lua scripts for atomic queue operations. Station's `AutoScaler` integrates with `WorkerSupervisor` to scale workers based on queue metrics (queue size, throughput, wait time, or a weighted combination), but uses database queries rather than Redis Lua scripts for metrics collection.
 
 **2. Redis Lua Script Optimizations**
 

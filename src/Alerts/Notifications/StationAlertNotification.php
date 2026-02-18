@@ -7,6 +7,7 @@ namespace Station\Alerts\Notifications;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Station\Alerts\Channels\StationDiscordChannel;
+use Station\Alerts\Channels\StationEmailChannel;
 use Station\Alerts\Channels\StationGoogleChatChannel;
 use Station\Alerts\Channels\StationLogChannel;
 use Station\Alerts\Channels\StationSlackChannel;
@@ -29,7 +30,7 @@ final class StationAlertNotification extends Notification
     public function via(mixed $notifiable): array
     {
         return [match ($this->channelType) {
-            AlertChannelType::Email => 'mail',
+            AlertChannelType::Email => StationEmailChannel::class,
             AlertChannelType::Slack => StationSlackChannel::class,
             AlertChannelType::Log => StationLogChannel::class,
             AlertChannelType::Discord => StationDiscordChannel::class,

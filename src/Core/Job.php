@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 use Ramsey\Uuid\Uuid;
 use Station\Enums\JobStatus;
+use Throwable;
 
 /**
  * @implements Arrayable<string, mixed>
@@ -196,7 +197,7 @@ final class Job implements Arrayable, JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'name' => $this->jobClass,
             'queue' => $this->queue,
@@ -219,5 +220,19 @@ final class Job implements Arrayable, JsonSerializable
             'exception' => $this->exception,
             'failed_at' => $this->status === JobStatus::Failed->value ? $this->completedAt?->toIso8601String() : null,
         ];
+
+        try {
+            if (config('station.masking.enabled', true)) {
+                $data['payload'] = PayloadMasker::mask(
+                    $this->payload,
+                    config('station.masking.fields', []),
+                    config('station.masking.replacement', '[REDACTED]'),
+                );
+            }
+        } catch (Throwable) {
+            // Config not available (e.g. unit tests without Laravel container)
+        }
+
+        return $data;
     }
 }

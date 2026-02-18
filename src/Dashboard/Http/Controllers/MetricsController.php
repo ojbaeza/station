@@ -6,6 +6,7 @@ namespace Station\Dashboard\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Station\Contracts\HealthCheckerInterface;
 use Station\Contracts\JobRepositoryInterface;
@@ -16,6 +17,8 @@ use Station\Core\MetricsCollector;
 use Station\Core\ProcessManager;
 use Station\Dashboard\Http\Controllers\Traits\ApiHelpers;
 use Station\Enums\HealthStatus;
+use Station\Telemetry\InternalMeter;
+use Station\Telemetry\TelemetryManager;
 use Throwable;
 
 final class MetricsController extends Controller
@@ -171,6 +174,28 @@ final class MetricsController extends Controller
         }
 
         return response()->json($result);
+    }
+
+    /**
+     * Export metrics in Prometheus format.
+     */
+    public function prometheus(): Response
+    {
+        try {
+            $telemetry = app(TelemetryManager::class);
+            $meter = $telemetry->getMeter();
+
+            if (!$meter instanceof InternalMeter) {
+                return response('Prometheus export requires the internal meter driver.', 501)
+                    ->header('Content-Type', 'text/plain');
+            }
+
+            return response($meter->exportPrometheus(), 200)
+                ->header('Content-Type', 'text/plain; charset=utf-8');
+        } catch (Throwable $e) {
+            return response('Failed to export metrics: ' . $e->getMessage(), 500)
+                ->header('Content-Type', 'text/plain');
+        }
     }
 
     /**

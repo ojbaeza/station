@@ -213,7 +213,7 @@ AWS-native queue driver with FIFO queue support and LocalStack compatibility for
     'secret' => env('AWS_SECRET_ACCESS_KEY'),
     'token' => env('AWS_SESSION_TOKEN'),
     'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
-    'prefix' => env('SQS_PREFIX', 'https://sqs.us-east-1.amazonaws.com/your-account-id'),
+    'prefix' => env('SQS_PREFIX', ''),
     'suffix' => env('SQS_SUFFIX'),
     'queue' => env('SQS_QUEUE', 'default'),
     'endpoint' => env('SQS_ENDPOINT'),              // For LocalStack
