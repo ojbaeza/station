@@ -87,7 +87,7 @@ class ValidateApiTokenTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
-    public function testAcceptsQueryParameterToken(): void
+    public function testRejectsQueryParameterToken(): void
     {
         config([
             'station.api.enabled' => true,
@@ -104,8 +104,9 @@ class ValidateApiTokenTest extends TestCase
             return response('OK');
         });
 
-        $this->assertTrue($called);
-        $this->assertSame(200, $response->getStatusCode());
+        // Query parameter tokens are no longer accepted (security: tokens leak in logs/referrers)
+        $this->assertFalse($called);
+        $this->assertSame(401, $response->getStatusCode());
     }
 
     public function testReturns401WhenInvalidTokenProvided(): void

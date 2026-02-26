@@ -92,7 +92,8 @@ class BatchManagerTest extends TestCase
         $this->repository
             ->shouldReceive('markAsFinished')
             ->once()
-            ->with('batch-2', BatchStatus::Completed->value);
+            ->with('batch-2', BatchStatus::Completed->value)
+            ->andReturn(true);
 
         $this->manager->recordJobCompletion('batch-2');
     }
@@ -160,7 +161,8 @@ class BatchManagerTest extends TestCase
         $this->repository
             ->shouldReceive('markAsFinished')
             ->once()
-            ->with('batch-evt-1', BatchStatus::Completed->value);
+            ->with('batch-evt-1', BatchStatus::Completed->value)
+            ->andReturn(true);
 
         $manager->recordJobCompletion('batch-evt-1');
 
@@ -242,7 +244,8 @@ class BatchManagerTest extends TestCase
         $this->repository
             ->shouldReceive('markAsFinished')
             ->once()
-            ->with('batch-exceed', BatchStatus::Failed->value);
+            ->with('batch-exceed', BatchStatus::Failed->value)
+            ->andReturn(true);
 
         Bus::shouldReceive('findBatch')
             ->with('batch-exceed')
@@ -278,7 +281,8 @@ class BatchManagerTest extends TestCase
         $this->repository
             ->shouldReceive('markAsFinished')
             ->once()
-            ->with('batch-evt-fail', BatchStatus::Failed->value);
+            ->with('batch-evt-fail', BatchStatus::Failed->value)
+            ->andReturn(true);
 
         Bus::shouldReceive('findBatch')
             ->with('batch-evt-fail')
@@ -293,8 +297,9 @@ class BatchManagerTest extends TestCase
 
     public function testRecordJobFailureFinishesBatchWhenPendingReachesZero(): void
     {
+        // failedJobs (1) <= allowedFailures (5) → finishBatch marks as Completed
         $batch = $this->makeBatch('batch-done', 3, 0, 3, 1, BatchStatus::Processing->value, 5);
-        $failedBatch = $this->makeBatch('batch-done', 3, 0, 3, 1, BatchStatus::Failed->value, 5);
+        $completedBatch = $this->makeBatch('batch-done', 3, 0, 3, 1, BatchStatus::Completed->value, 5);
 
         $this->repository
             ->shouldReceive('incrementFailed')
@@ -305,17 +310,13 @@ class BatchManagerTest extends TestCase
         $this->repository
             ->shouldReceive('find')
             ->with('batch-done')
-            ->andReturn($batch, $failedBatch);
+            ->andReturn($batch, $completedBatch);
 
-        // failedJobs > 0 → finishBatch marks as Failed
         $this->repository
             ->shouldReceive('markAsFinished')
             ->once()
-            ->with('batch-done', BatchStatus::Failed->value);
-
-        Bus::shouldReceive('findBatch')
-            ->with('batch-done')
-            ->andReturnNull();
+            ->with('batch-done', BatchStatus::Completed->value)
+            ->andReturn(true);
 
         $this->manager->recordJobFailure('batch-done', 'job-last');
     }
@@ -348,7 +349,8 @@ class BatchManagerTest extends TestCase
         $this->repository
             ->shouldReceive('markAsFinished')
             ->once()
-            ->with('batch-clean', BatchStatus::Completed->value);
+            ->with('batch-clean', BatchStatus::Completed->value)
+            ->andReturn(true);
 
         $manager->recordJobFailure('batch-clean', 'job-y');
 

@@ -17,6 +17,11 @@ interface JobRepositoryInterface
     public function store(Job $job): void;
 
     /**
+     * Check if a job exists by ID.
+     */
+    public function exists(string $id): bool;
+
+    /**
      * Find a job by ID.
      */
     public function find(string $id): ?Job;

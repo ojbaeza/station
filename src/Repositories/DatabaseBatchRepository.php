@@ -165,17 +165,24 @@ final class DatabaseBatchRepository implements BatchRepositoryInterface
             ]);
     }
 
-    public function markAsFinished(string $id, string $status): void
+    public function markAsFinished(string $id, string $status): bool
     {
         $now = CarbonImmutable::now();
 
-        $this->connection->table($this->table)
+        $affected = $this->connection->table($this->table)
             ->where('id', $id)
+            ->whereNotIn('status', [
+                BatchStatus::Completed->value,
+                BatchStatus::Failed->value,
+                BatchStatus::Cancelled->value,
+            ])
             ->update([
                 'status' => $status,
                 'finished_at' => $now->toDateTimeString(),
                 'updated_at' => $now->toDateTimeString(),
             ]);
+
+        return $affected > 0;
     }
 
     public function cancel(string $id): void

@@ -59,6 +59,3 @@ phpstan.neon.local
 # Claude
 .claude/
 CLAUDE.md
-
-# Example
-example/*

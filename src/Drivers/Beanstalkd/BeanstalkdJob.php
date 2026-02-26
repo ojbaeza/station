@@ -165,7 +165,7 @@ final class BeanstalkdJob extends Job implements JobContract
 
             if ($serializedJob && \is_string($serializedJob)) {
                 // Unserialize the job instance (it was serialized when dispatched)
-                $instance = unserialize($serializedJob);
+                $instance = unserialize($serializedJob, ['allowed_classes' => true]);
 
                 if (\is_object($instance) && method_exists($instance, 'handle')) {
                     // Set queue properties if the job uses InteractsWithQueue

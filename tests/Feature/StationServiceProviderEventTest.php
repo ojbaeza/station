@@ -45,6 +45,9 @@ class StationServiceProviderEventTest extends TestCase
     public function testJobQueuedEventTracksNewJob(): void
     {
         $repository = Mockery::mock(JobRepositoryInterface::class);
+        $repository->shouldReceive('exists')
+            ->with('test-uuid-123')
+            ->andReturn(false);
         $repository->shouldReceive('trackQueued')
             ->once()
             ->with(

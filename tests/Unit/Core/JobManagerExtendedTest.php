@@ -205,25 +205,6 @@ class JobManagerExtendedTest extends TestCase
         $this->assertSame(1, $count);
     }
 
-    // ---- dispatchSync with no handle method ----
-
-    public function testDispatchSyncWithNoHandleMethodDoesNothing(): void
-    {
-        $job = new class {
-            public bool $called = false;
-
-            // No handle() method
-            public function process(): void
-            {
-                $this->called = true;
-            }
-        };
-
-        $this->manager->dispatchSync($job);
-
-        $this->assertFalse($job->called);
-    }
-
     // ---- complete with null workerId ----
 
     public function testCompleteWithNullWorkerIdUsesUnknown(): void

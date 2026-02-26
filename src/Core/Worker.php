@@ -182,11 +182,12 @@ final class Worker
                 $job->delete();
             }
 
-            // Fire Laravel's standard JobProcessed event
+            // Fire Laravel's standard JobProcessed event only if the job truly succeeded
             // (StationServiceProvider listeners handle DB tracking, batch counters, and metrics)
-            $this->events->dispatch(new JobProcessed($this->connection, $job));
-
-            $this->jobsProcessed++;
+            if (!$job->hasFailed() && !$job->isReleased()) {
+                $this->events->dispatch(new JobProcessed($this->connection, $job));
+                $this->jobsProcessed++;
+            }
         } catch (Throwable $e) {
             // Clear timeout
             pcntl_alarm(0);

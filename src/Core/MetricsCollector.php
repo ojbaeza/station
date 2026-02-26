@@ -29,6 +29,14 @@ final class MetricsCollector implements MetricsCollectorInterface
     ) {}
 
     /**
+     * Reset the static buffer (call after fork to avoid parent state leaking into child).
+     */
+    public static function resetBuffer(): void
+    {
+        self::$buffer = [];
+    }
+
+    /**
      * Check if metrics collection is enabled.
      */
     public function isEnabled(): bool

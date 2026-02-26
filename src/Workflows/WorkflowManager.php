@@ -37,6 +37,14 @@ final class WorkflowManager
     ) {}
 
     /**
+     * Reset in-memory state (call after fork to avoid parent state leaking into child).
+     */
+    public function resetState(): void
+    {
+        $this->persistedInstances = [];
+    }
+
+    /**
      * Define a new workflow.
      */
     public function define(string $name): WorkflowDefinition

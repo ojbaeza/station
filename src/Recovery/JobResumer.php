@@ -12,6 +12,7 @@ use Station\Contracts\JobRepositoryInterface;
 use Station\Contracts\JobResumerInterface;
 use Station\Core\Job;
 use Station\Events\JobRecovered;
+use Throwable;
 
 final class JobResumer implements JobResumerInterface
 {
@@ -127,8 +128,16 @@ final class JobResumer implements JobResumerInterface
         // Delete any checkpoint
         $this->checkpointManager->delete($job->id);
 
-        // Retry the job
-        $this->jobManager->retry($job->id);
+        try {
+            $this->jobManager->retry($job->id);
+        } catch (Throwable $e) {
+            logger()->warning('Station: Forced restart failed', [
+                'job_id' => $job->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
 
         $this->events->dispatch(new JobRecovered($job, 'forced_restart', false));
 

@@ -58,10 +58,8 @@ final class StuckJobDetector implements StuckJobDetectorInterface
     public function calculateStuckScore(Job $job): float
     {
         $weights = $this->config['weights'] ?? [
-            'heartbeat' => 0.4,
-            'runtime' => 0.3,
-            'memory' => 0.15,
-            'process_state' => 0.15,
+            'heartbeat' => 0.6,
+            'runtime' => 0.4,
         ];
 
         $score = 0.0;
@@ -93,7 +91,7 @@ final class StuckJobDetector implements StuckJobDetectorInterface
      */
     public function isStuck(Job $job): bool
     {
-        $threshold = $this->config['stuck_threshold'] ?? 0.7;
+        $threshold = $this->config['stuck_threshold'] ?? 0.6;
         $score = $this->calculateStuckScore($job);
 
         return $score >= $threshold;

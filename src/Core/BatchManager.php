@@ -251,9 +251,13 @@ final class BatchManager
      */
     private function finishBatch(Batch $batch): void
     {
-        $status = $batch->failedJobs > 0 ? BatchStatus::Failed->value : BatchStatus::Completed->value;
+        $status = $batch->failedJobs > $batch->allowedFailures
+            ? BatchStatus::Failed->value
+            : BatchStatus::Completed->value;
 
-        $this->repository->markAsFinished($batch->id, $status);
+        if (!$this->repository->markAsFinished($batch->id, $status)) {
+            return; // Already finished by another worker
+        }
 
         $batch = $this->repository->find($batch->id);
 
@@ -289,7 +293,9 @@ final class BatchManager
      */
     private function failBatch(Batch $batch): void
     {
-        $this->repository->markAsFinished($batch->id, BatchStatus::Failed->value);
+        if (!$this->repository->markAsFinished($batch->id, BatchStatus::Failed->value)) {
+            return; // Already finished by another worker
+        }
 
         // Cancel remaining jobs via Laravel
         $laravelBatch = Bus::findBatch($batch->id);

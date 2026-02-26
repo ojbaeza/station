@@ -179,11 +179,12 @@ final class CircuitBreaker
     private function incrementFailures(): int
     {
         $key = $this->key('failures');
-        $failures = (int) $this->cache->get($key, 0);
-        $failures++;
-        $this->cache->put($key, $failures, $this->getTtl());
 
-        return $failures;
+        if (!$this->cache->has($key)) {
+            $this->cache->put($key, 0, $this->getTtl());
+        }
+
+        return (int) $this->cache->increment($key);
     }
 
     /**

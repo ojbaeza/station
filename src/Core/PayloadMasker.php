@@ -18,7 +18,7 @@ final class PayloadMasker
     public static function mask(string $serializedPayload, array $globalFields = [], string $replacement = '[REDACTED]'): string
     {
         try {
-            $job = unserialize($serializedPayload);
+            $job = unserialize($serializedPayload, ['allowed_classes' => true]);
         } catch (Throwable) {
             return '[encrypted]';
         }

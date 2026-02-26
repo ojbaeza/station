@@ -38,6 +38,11 @@ final class DatabaseJobRepository implements JobRepositoryInterface
         $this->connection->table($this->table)->insert($data);
     }
 
+    public function exists(string $id): bool
+    {
+        return $this->connection->table($this->table)->where('id', $id)->exists();
+    }
+
     public function find(string $id): ?Job
     {
         $row = $this->connection->table($this->table)->where('id', $id)->first();
@@ -115,42 +120,48 @@ final class DatabaseJobRepository implements JobRepositoryInterface
 
     public function reserve(string $queue, string $workerId): ?Job
     {
-        $now = CarbonImmutable::now();
+        $maxAttempts = 3;
 
-        // Find an available job
-        $job = $this->connection->table($this->table)
-            ->where('queue', $queue)
-            ->where('status', JobStatus::Pending->value)
-            ->where(static function ($query) use ($now): void {
-                $query->whereNull('available_at')
-                    ->orWhere('available_at', '<=', $now->toDateTimeString());
-            })
-            ->orderBy('priority', 'desc')
-            ->orderBy('available_at', 'asc')
-            ->orderBy('created_at', 'asc')
-            ->first();
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            $now = CarbonImmutable::now();
 
-        if ($job === null) {
-            return null;
+            // Find an available job
+            $job = $this->connection->table($this->table)
+                ->where('queue', $queue)
+                ->where('status', JobStatus::Pending->value)
+                ->where(static function ($query) use ($now): void {
+                    $query->whereNull('available_at')
+                        ->orWhere('available_at', '<=', $now->toDateTimeString());
+                })
+                ->orderBy('priority', 'desc')
+                ->orderBy('available_at', 'asc')
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            if ($job === null) {
+                return null;
+            }
+
+            // Try to reserve it (optimistic locking)
+            $updated = $this->connection->table($this->table)
+                ->where('id', $job->id)
+                ->where('status', JobStatus::Pending->value)
+                ->update([
+                    'status' => JobStatus::Reserved->value,
+                    'worker_id' => $workerId,
+                    'reserved_at' => $now->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                ]);
+
+            if ($updated > 0) {
+                return Job::fromArray((array) $job);
+            }
+
+            // Someone else got it — brief jitter before retry
+            usleep(random_int(5000, 20000));
         }
 
-        // Try to reserve it (optimistic locking)
-        $updated = $this->connection->table($this->table)
-            ->where('id', $job->id)
-            ->where('status', JobStatus::Pending->value)
-            ->update([
-                'status' => JobStatus::Reserved->value,
-                'worker_id' => $workerId,
-                'reserved_at' => $now->toDateTimeString(),
-                'updated_at' => $now->toDateTimeString(),
-            ]);
-
-        if ($updated === 0) {
-            // Someone else got it, try again
-            return $this->reserve($queue, $workerId);
-        }
-
-        return Job::fromArray((array) $job);
+        return null;
     }
 
     public function complete(string $id, int $processingTime, int $memoryUsed): void
@@ -291,7 +302,7 @@ final class DatabaseJobRepository implements JobRepositoryInterface
         }
 
         if (isset($filters['job_class'])) {
-            $query->where('job_class', 'like', '%' . $filters['job_class'] . '%');
+            $query->where('job_class', 'like', '%' . $this->escapeLike($filters['job_class']) . '%');
         }
 
         if (isset($filters['batch_id'])) {
@@ -350,7 +361,7 @@ final class DatabaseJobRepository implements JobRepositoryInterface
         }
 
         if (isset($filters['job_class'])) {
-            $query->where('job_class', 'like', '%' . $filters['job_class'] . '%');
+            $query->where('job_class', 'like', '%' . $this->escapeLike($filters['job_class']) . '%');
         }
 
         if (isset($filters['batch_id'])) {
@@ -436,15 +447,26 @@ final class DatabaseJobRepository implements JobRepositoryInterface
      */
     public function getStatsByQueue(): array
     {
+        $results = $this->connection->table($this->table)
+            ->selectRaw('queue, status, count(*) as count')
+            ->groupBy('queue', 'status')
+            ->get();
+
+        $grouped = [];
+
+        foreach ($results as $row) {
+            $grouped[$row->queue][$row->status] = (int) $row->count;
+        }
+
         $stats = [];
 
-        $queues = $this->connection->table($this->table)
-            ->select('queue')
-            ->distinct()
-            ->pluck('queue');
-
-        foreach ($queues as $queue) {
-            $stats[$queue] = $this->getStats($queue);
+        foreach ($grouped as $queue => $statusCounts) {
+            $stats[$queue] = new JobStats(
+                pending: $statusCounts[JobStatus::Pending->value] ?? 0,
+                processing: $statusCounts[JobStatus::Processing->value] ?? 0,
+                completed: $statusCounts[JobStatus::Completed->value] ?? 0,
+                failed: $statusCounts[JobStatus::Failed->value] ?? 0,
+            );
         }
 
         return $stats;
@@ -811,5 +833,10 @@ final class DatabaseJobRepository implements JobRepositoryInterface
         $query['page'] = $page;
 
         return request()->url() . '?' . http_build_query($query);
+    }
+
+    private function escapeLike(string $value): string
+    {
+        return str_replace(['%', '_', '\\'], ['\\%', '\\_', '\\\\'], $value);
     }
 }

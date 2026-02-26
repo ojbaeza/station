@@ -23,7 +23,7 @@ final class ProcessManager
     /**
      * Start worker(s) for a connection.
      *
-     * @return array{success: bool, pid: int|null, command: string, message: string}
+     * @return array{success: bool, pids: list<int>, command: string, message: string}
      */
     public function startWorker(string $connection, string $queue = 'default', int $workers = 1): array
     {
@@ -40,32 +40,35 @@ final class ProcessManager
             escapeshellarg($logFile),
         );
 
-        $output = [];
-        $resultCode = 0;
+        $allSucceeded = true;
 
-        exec($command, $output, $resultCode);
+        for ($i = 0; $i < $workers; $i++) {
+            $output = [];
+            $resultCode = 0;
 
-        // Allow process to register, then detect PID
+            exec($command, $output, $resultCode);
+
+            if ($resultCode !== 0) {
+                $allSucceeded = false;
+            }
+        }
+
+        // Allow processes to register, then detect PIDs
         usleep(200_000);
 
-        $pid = null;
+        $pids = [];
         $detected = $this->detectRunningWorkers();
 
         foreach ($detected[$connection] ?? [] as $info) {
-            $pid = $info['pid'];
-
-            break;
-        }
-
-        if ($pid !== null && $pid > 0) {
-            $this->savePidFile('worker', $connection, $pid, $command);
+            $pids[] = $info['pid'];
+            $this->savePidFile('worker', $connection . '-' . $info['pid'], $info['pid'], $command);
         }
 
         return [
-            'success' => $resultCode === 0,
-            'pid' => $pid,
+            'success' => $allSucceeded,
+            'pids' => $pids,
             'command' => $command,
-            'message' => $resultCode === 0 ? "Worker started for {$connection}" : 'Failed to start worker',
+            'message' => $allSucceeded ? "Started {$workers} worker(s) for {$connection}" : 'Some workers failed to start',
         ];
     }
 

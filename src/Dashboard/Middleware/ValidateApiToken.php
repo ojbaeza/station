@@ -34,7 +34,7 @@ final class ValidateApiToken
         if ($token === null) {
             return response()->json([
                 'error' => 'API token required',
-                'message' => 'Please provide a valid API token in the Authorization header or as a query parameter.',
+                'message' => 'Please provide a valid API token via the Authorization: Bearer header.',
             ], 401);
         }
 
@@ -54,18 +54,11 @@ final class ValidateApiToken
      */
     private function getTokenFromRequest(Request $request): ?string
     {
-        // Check Bearer token
+        // Only accept Bearer token via Authorization header (query string exposes tokens in logs/referrers)
         $authHeader = $request->header('Authorization');
 
         if ($authHeader !== null && str_starts_with($authHeader, 'Bearer ')) {
             return substr($authHeader, 7);
-        }
-
-        // Check query parameter
-        $token = $request->query('api_token');
-
-        if (\is_string($token)) {
-            return $token;
         }
 
         return null;

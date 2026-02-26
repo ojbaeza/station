@@ -107,9 +107,7 @@ final class JobManager implements JobManagerInterface
      */
     public function dispatchSync(object $job): void
     {
-        if (method_exists($job, 'handle')) {
-            $job->handle();
-        }
+        dispatch_sync($job);
     }
 
     /**
@@ -368,7 +366,7 @@ final class JobManager implements JobManagerInterface
         $connection = $stationJob->connection ?? $this->config['default'] ?? 'rabbitmq';
 
         // Use the original job object, or unserialize from stored payload (for retries)
-        $job = $originalJob ?? unserialize($stationJob->payload);
+        $job = $originalJob ?? unserialize($stationJob->payload, ['allowed_classes' => true]);
 
         // Tag the job with Station's tracking ID so event listeners can find it
         if (\is_object($job)) {

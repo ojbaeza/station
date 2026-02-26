@@ -13,6 +13,7 @@ use Station\Events\SupervisorStopped;
 use Station\Events\WorkerStarted;
 use Station\Events\WorkerStopped;
 use Station\Scaling\AutoScaler;
+use Station\Workflows\WorkflowManager;
 use Throwable;
 
 final class WorkerSupervisor implements WorkerSupervisorInterface
@@ -256,6 +257,13 @@ final class WorkerSupervisor implements WorkerSupervisorInterface
 
         // Reconnect database
         $app['db']->reconnect();
+
+        // Reset static/singleton state inherited from parent process
+        MetricsCollector::resetBuffer();
+
+        if ($app->bound(WorkflowManager::class)) {
+            $app->make(WorkflowManager::class)->resetState();
+        }
 
         // Get fresh instances from the container
         $worker = new Worker(

@@ -83,7 +83,7 @@ interface BatchRepositoryInterface
     /**
      * Mark a batch as finished.
      */
-    public function markAsFinished(string $id, string $status): void;
+    public function markAsFinished(string $id, string $status): bool;
 
     /**
      * Cancel a batch.

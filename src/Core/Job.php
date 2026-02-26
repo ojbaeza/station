@@ -123,7 +123,7 @@ final class Job implements Arrayable, JsonSerializable
      */
     public function getJobInstance(): object
     {
-        return unserialize($this->payload);
+        return unserialize($this->payload, ['allowed_classes' => true]);
     }
 
     /**

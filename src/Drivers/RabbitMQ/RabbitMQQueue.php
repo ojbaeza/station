@@ -139,7 +139,7 @@ final class RabbitMQQueue extends Queue implements AggregateDriverInfoInterface,
      */
     public function pause(string $queue): void
     {
-        DB::table('station_queue_status')->updateOrInsert(
+        DB::table(config('station.storage.database.table_prefix', 'station_') . 'queue_status')->updateOrInsert(
             ['queue' => $queue, 'connection' => $this->connectionName ?: 'rabbitmq'],
             ['paused' => true, 'paused_at' => now(), 'updated_at' => now()],
         );
@@ -153,7 +153,7 @@ final class RabbitMQQueue extends Queue implements AggregateDriverInfoInterface,
      */
     public function resume(string $queue): void
     {
-        DB::table('station_queue_status')->updateOrInsert(
+        DB::table(config('station.storage.database.table_prefix', 'station_') . 'queue_status')->updateOrInsert(
             ['queue' => $queue, 'connection' => $this->connectionName ?: 'rabbitmq'],
             ['paused' => false, 'paused_at' => null, 'updated_at' => now()],
         );
@@ -177,7 +177,7 @@ final class RabbitMQQueue extends Queue implements AggregateDriverInfoInterface,
             $count = 0;
 
             while ($count < $limit) {
-                $envelope = $dlq->get(AMQP_AUTOACK);
+                $envelope = $dlq->get(AMQP_NOPARAM);
 
                 if (!$envelope instanceof AMQPEnvelope) {
                     break;
@@ -191,6 +191,9 @@ final class RabbitMQQueue extends Queue implements AggregateDriverInfoInterface,
                     'routing_key' => $envelope->getRoutingKey(),
                     'timestamp' => $envelope->getTimestamp(),
                 ];
+
+                // Nack+requeue so the message stays in the DLQ (read-only peek)
+                $dlq->nack((int) ($deliveryTag ?? 0), AMQP_REQUEUE);
 
                 $count++;
             }

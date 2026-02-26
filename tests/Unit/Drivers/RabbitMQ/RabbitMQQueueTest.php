@@ -855,9 +855,12 @@ class RabbitMQQueueTest extends TestCase
 
         $dlqAmqpQueue = Mockery::mock(AMQPQueue::class);
         $dlqAmqpQueue->shouldReceive('get')
-            ->with(AMQP_AUTOACK)
+            ->with(AMQP_NOPARAM)
             ->twice()
             ->andReturn($envelope, false);
+        $dlqAmqpQueue->shouldReceive('nack')
+            ->with(99, AMQP_REQUEUE)
+            ->once();
 
         // Inject the DLQ queue into the connection's queues array
         $conn = $this->createRealConnectionWithInjectedQueues([
@@ -888,9 +891,12 @@ class RabbitMQQueueTest extends TestCase
 
         $dlqAmqpQueue = Mockery::mock(AMQPQueue::class);
         $dlqAmqpQueue->shouldReceive('get')
-            ->with(AMQP_AUTOACK)
+            ->with(AMQP_NOPARAM)
             ->twice()
             ->andReturn($envelope, false);
+        $dlqAmqpQueue->shouldReceive('nack')
+            ->with(0, AMQP_REQUEUE)
+            ->once();
 
         $conn = $this->createRealConnectionWithInjectedQueues(['q.dlq' => $dlqAmqpQueue]);
 
@@ -914,9 +920,12 @@ class RabbitMQQueueTest extends TestCase
 
         $dlqAmqpQueue = Mockery::mock(AMQPQueue::class);
         $dlqAmqpQueue->shouldReceive('get')
-            ->with(AMQP_AUTOACK)
+            ->with(AMQP_NOPARAM)
             ->twice()
             ->andReturn($envelope, $envelope);
+        $dlqAmqpQueue->shouldReceive('nack')
+            ->with(1, AMQP_REQUEUE)
+            ->twice();
 
         $conn = $this->createRealConnectionWithInjectedQueues(['q.dlq' => $dlqAmqpQueue]);
 

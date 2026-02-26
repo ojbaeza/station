@@ -252,6 +252,8 @@ class WorkerTest extends TestCase
         $job = $this->createMockJob('job-002');
         $job->shouldReceive('fire')->once();
         $job->shouldReceive('isDeleted')->andReturn(true);
+        $job->shouldReceive('isReleased')->andReturn(false);
+        $job->shouldReceive('hasFailed')->andReturn(false);
         $job->shouldNotReceive('delete');
 
         $this->events->shouldReceive('dispatch');
@@ -265,6 +267,7 @@ class WorkerTest extends TestCase
         $job->shouldReceive('fire')->once();
         $job->shouldReceive('isDeleted')->andReturn(false);
         $job->shouldReceive('isReleased')->andReturn(true);
+        $job->shouldReceive('hasFailed')->andReturn(false);
         $job->shouldNotReceive('delete');
 
         $this->events->shouldReceive('dispatch');

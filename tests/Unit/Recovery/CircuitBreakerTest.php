@@ -101,13 +101,18 @@ class CircuitBreakerTest extends TestCase
             ->with('station:circuit_breaker:test:state', 'closed')
             ->andReturn('closed');
 
-        $this->cache->shouldReceive('get')
-            ->with('station:circuit_breaker:test:failures', 0)
-            ->andReturn(0);
+        $this->cache->shouldReceive('has')
+            ->with('station:circuit_breaker:test:failures')
+            ->andReturn(false);
 
         $this->cache->shouldReceive('put')
-            ->with('station:circuit_breaker:test:failures', 1, 3600)
+            ->with('station:circuit_breaker:test:failures', 0, 3600)
             ->once();
+
+        $this->cache->shouldReceive('increment')
+            ->with('station:circuit_breaker:test:failures')
+            ->once()
+            ->andReturn(1);
 
         $breaker = new CircuitBreaker($this->cache, 'test');
         $breaker->recordFailure();
@@ -119,13 +124,14 @@ class CircuitBreakerTest extends TestCase
             ->with('station:circuit_breaker:test:state', 'closed')
             ->andReturn('closed');
 
-        $this->cache->shouldReceive('get')
-            ->with('station:circuit_breaker:test:failures', 0)
-            ->andReturn(4); // Already at 4, will increment to 5 (threshold)
+        $this->cache->shouldReceive('has')
+            ->with('station:circuit_breaker:test:failures')
+            ->andReturn(true);
 
-        $this->cache->shouldReceive('put')
-            ->with('station:circuit_breaker:test:failures', 5, 3600)
-            ->once();
+        $this->cache->shouldReceive('increment')
+            ->with('station:circuit_breaker:test:failures')
+            ->once()
+            ->andReturn(5); // Returns 5 (threshold)
 
         $this->cache->shouldReceive('put')
             ->with('station:circuit_breaker:test:state', 'open', 3600)

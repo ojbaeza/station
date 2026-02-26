@@ -22,7 +22,7 @@ class Authorize
             abort(404);
         }
 
-        if (app()->environment('local')) {
+        if (app()->environment('local') && !config('station.dashboard.auth_in_local', false)) {
             return $next($request);
         }
 

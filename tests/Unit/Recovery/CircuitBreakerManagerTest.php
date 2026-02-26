@@ -77,13 +77,18 @@ class CircuitBreakerManagerTest extends TestCase
             ->with('station:circuit_breaker:test:state', 'closed')
             ->andReturn('closed');
 
-        $this->cache->shouldReceive('get')
-            ->with('station:circuit_breaker:test:failures', 0)
-            ->andReturn(0);
+        $this->cache->shouldReceive('has')
+            ->with('station:circuit_breaker:test:failures')
+            ->andReturn(false);
 
         $this->cache->shouldReceive('put')
-            ->with('station:circuit_breaker:test:failures', 1, Mockery::any())
+            ->with('station:circuit_breaker:test:failures', 0, Mockery::any())
             ->once();
+
+        $this->cache->shouldReceive('increment')
+            ->with('station:circuit_breaker:test:failures')
+            ->once()
+            ->andReturn(1);
 
         $manager = new CircuitBreakerManager($this->cache);
 

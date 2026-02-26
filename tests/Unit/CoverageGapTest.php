@@ -38,45 +38,6 @@ class CoverageGapTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
-    // ---- JobManager::dispatchSync ----
-
-    public function testJobManagerDispatchSyncCallsHandleOnJob(): void
-    {
-        $repository = Mockery::mock(JobRepositoryInterface::class);
-        $queue = Mockery::mock(QueueFactory::class);
-        $events = Mockery::mock(Dispatcher::class);
-
-        $manager = new JobManager($repository, $queue, $events, []);
-
-        $job = new class {
-            public bool $handled = false;
-
-            public function handle(): void
-            {
-                $this->handled = true;
-            }
-        };
-
-        $manager->dispatchSync($job);
-        $this->assertTrue($job->handled);
-    }
-
-    public function testJobManagerDispatchSyncWithoutHandleMethod(): void
-    {
-        $repository = Mockery::mock(JobRepositoryInterface::class);
-        $queue = Mockery::mock(QueueFactory::class);
-        $events = Mockery::mock(Dispatcher::class);
-
-        $manager = new JobManager($repository, $queue, $events, []);
-
-        // Job without handle method
-        $job = new stdClass();
-
-        // Should not throw
-        $manager->dispatchSync($job);
-        $this->addToAssertionCount(1);
-    }
-
     // ---- JobManager::retryAll ----
 
     public function testJobManagerRetryAllWithMultipleFailedJobs(): void

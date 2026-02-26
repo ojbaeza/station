@@ -544,8 +544,14 @@ class StationServiceProvider extends ServiceProvider
 
                 $repository = $this->app->make(JobRepositoryInterface::class);
 
+                $jobId = $payload['uuid'] ?? $payload['id'] ?? uniqid('job_', true);
+
+                if ($repository->exists($jobId)) {
+                    return;
+                }
+
                 $repository->trackQueued(
-                    $payload['uuid'] ?? $payload['id'] ?? uniqid('job_', true),
+                    $jobId,
                     $payload['displayName'] ?? 'Unknown',
                     $event->queue ?? 'default',
                     $event->connectionName ?? config('queue.default'),
@@ -846,7 +852,7 @@ class StationServiceProvider extends ServiceProvider
                 return null;
             }
 
-            $job = \is_string($command) ? unserialize($command) : $command;
+            $job = \is_string($command) ? unserialize($command, ['allowed_classes' => true]) : $command;
 
             return $job->stationJobId ?? null;
         } catch (Throwable) {
@@ -869,7 +875,7 @@ class StationServiceProvider extends ServiceProvider
                 return null;
             }
 
-            $job = \is_string($command) ? unserialize($command) : $command;
+            $job = \is_string($command) ? unserialize($command, ['allowed_classes' => true]) : $command;
 
             // Check for Batchable trait's batchId property
             if (property_exists($job, 'batchId') && $job->batchId !== null) {

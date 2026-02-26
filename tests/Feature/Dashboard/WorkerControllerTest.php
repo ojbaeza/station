@@ -168,7 +168,7 @@ class WorkerControllerTest extends TestCase
             'workers' => 1,
         ])
             ->assertOk()
-            ->assertJsonStructure(['success', 'pid', 'command', 'message']);
+            ->assertJsonStructure(['success', 'pids', 'command', 'message']);
     }
 
     public function testStartWorkerWithMultipleWorkersReturnsResponse(): void
@@ -182,7 +182,7 @@ class WorkerControllerTest extends TestCase
             'workers' => 3,
         ])
             ->assertOk()
-            ->assertJsonStructure(['success', 'pid', 'command', 'message']);
+            ->assertJsonStructure(['success', 'pids', 'command', 'message']);
     }
 
     public function testStartWorkerDefaultsToQueueDefault(): void

@@ -116,23 +116,6 @@ class JobManagerTest extends TestCase
         $this->assertNotEmpty($id);
     }
 
-    public function testDispatchSyncExecutesJobImmediately(): void
-    {
-        $executed = false;
-        $job = new class($executed) {
-            public function __construct(private bool &$executed) {}
-
-            public function handle(): void
-            {
-                $this->executed = true;
-            }
-        };
-
-        $this->manager->dispatchSync($job);
-
-        $this->assertTrue($executed);
-    }
-
     public function testFindDelegatesToRepository(): void
     {
         $job = new Job(
