@@ -49,7 +49,7 @@
     "require-dev": {
         "aws/aws-sdk-php": "^3.0",
         "friendsofphp/php-cs-fixer": "^3.64",
-        "inertiajs/inertia-laravel": "^2.0",
+        "inertiajs/inertia-laravel": "^3.2",
         "larastan/larastan": "^3.0",
         "mockery/mockery": "^1.6",
         "orchestra/testbench": "^9.0 || ^10.0",
